@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ScanMAT | Smart Material Tracking & Digital Archive System</title>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:#f3f6fa;color:#172033}
+.app{display:flex;min-height:100vh}.sidebar{width:250px;background:#10243e;color:#fff;padding:22px 16px;position:fixed;inset:0 auto 0 0}.brand{font-size:19px;font-weight:700;padding:8px 10px 28px}.brand span{display:block;font-size:11px;font-weight:400;color:#aebed2;margin-top:5px}.nav button{width:100%;border:0;background:transparent;color:#d8e2ef;text-align:left;padding:13px 12px;border-radius:8px;margin:3px 0;cursor:pointer;font-size:14px}.nav button.active,.nav button:hover{background:#1d426b;color:#fff}.main{margin-left:250px;width:calc(100% - 250px);padding:25px 30px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.top h1{margin:0;font-size:25px}.top p{margin:5px 0 0;color:#6d7888;font-size:13px}.user{background:#fff;padding:9px 14px;border-radius:8px;border:1px solid #e0e6ed;font-size:13px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:20px}.card{background:#fff;border:1px solid #e2e8ef;border-radius:11px;padding:18px;box-shadow:0 2px 8px #1720330b}.label{color:#738096;font-size:12px}.value{font-size:26px;font-weight:700;margin-top:7px}.toolbar{display:flex;gap:10px;margin-bottom:16px}.search{flex:1;padding:12px 14px;border:1px solid #d7dfe8;border-radius:8px;background:#fff}.btn{border:0;border-radius:8px;padding:11px 15px;cursor:pointer;font-weight:600}.primary{background:#1769aa;color:#fff}.secondary{background:#fff;border:1px solid #d5dde7;color:#26364a}.panel{background:#fff;border:1px solid #e2e8ef;border-radius:11px;overflow:hidden}.table{width:100%;border-collapse:collapse;font-size:13px}.table th{background:#f7f9fb;color:#647185;text-align:left;font-weight:600}.table th,.table td{padding:12px;border-bottom:1px solid #edf1f5}.thumb{width:58px;height:48px;border-radius:6px;object-fit:cover;background:#eef2f6}.badge{padding:5px 8px;border-radius:20px;background:#e9f5ed;color:#267343;font-size:11px}.empty{padding:40px;text-align:center;color:#7c8796}.page{display:none}.page.active{display:block}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.field label{display:block;font-size:12px;color:#596779;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;padding:11px;border:1px solid #d5dde7;border-radius:7px}.field.full{grid-column:1/-1}.upload{border:2px dashed #cbd6e2;border-radius:10px;padding:25px;text-align:center;color:#748197}.upload img{max-width:260px;max-height:180px;display:none;margin:10px auto;border-radius:8px}.modal{position:fixed;inset:0;background:#09162599;display:none;align-items:center;justify-content:center;padding:20px}.modal.show{display:flex}.modalbox{background:#fff;border-radius:12px;max-width:900px;width:100%;max-height:90vh;overflow:auto;padding:22px}.modalhead{display:flex;justify-content:space-between;align-items:center}.modalhead h2{margin:0}.detail{display:grid;grid-template-columns:1fr 1.2fr;gap:20px;margin-top:18px}.detail img{width:100%;max-height:430px;object-fit:contain;background:#f2f5f8;border-radius:9px}.kv{display:grid;grid-template-columns:140px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid #edf1f5;font-size:13px}.kv b{color:#657286}.notice{padding:12px;background:#eef7ff;border-left:4px solid #1769aa;border-radius:5px;color:#35506d;font-size:13px;margin-bottom:16px}
+@media(max-width:900px){.sidebar{width:190px}.main{margin-left:190px;width:calc(100% - 190px);padding:18px}.stats{grid-template-columns:1fr 1fr}.formgrid,.detail{grid-template-columns:1fr}}
+
+.scan-inline{display:flex;gap:8px;align-items:center}
+.scan-inline input{flex:1}
+.scan-btn{white-space:nowrap}
+.qrbar-panel{margin-top:18px;padding:18px;border:1px solid #e2e8ef;border-radius:10px;background:#f8fafc}
+.qrbar-panel h3{margin:0 0 12px;color:#10243e}
+.label-preview{display:flex;justify-content:center}
+.label-card{width:360px;max-width:100%;background:#fff;border:1px solid #cfd8e3;border-radius:8px;padding:14px;box-shadow:0 2px 8px #17203312}
+.label-brand{font-size:10px;font-weight:700;color:#647185;letter-spacing:.5px}
+.label-code{font-size:18px;font-weight:800;color:#10243e;margin:4px 0}
+.label-desc{font-size:10px;color:#4e5c6f;margin-bottom:8px;line-height:1.25}
+.barcode-wrap{text-align:center}
+.barcode-wrap svg{max-width:100%;height:auto}
+.qr-wrap{text-align:center;margin-top:7px}
+.qr-wrap img,.qr-wrap canvas{max-width:90px}
+.label-footer{display:flex;justify-content:space-between;font-size:8px;color:#69778a;margin-top:6px}
+.issue-info{display:none;margin-top:15px;padding:16px;background:#f8fafc;border:1px solid #dfe6ee;border-radius:9px}
+/* COMPANY LOGO */
+
+.company-logo {
+
+    width: 100%;
+    height: 108px;
+    background: #ffffff00;
+    border-radius: 18px;
+    object-fit: contain;
+    padding: 8px;
+    margin-bottom: 15px;
+}
+.issue-info.show{display:block}
+.available-box{font-size:24px;font-weight:800;color:#267343;margin:8px 0}
+.scanner{display:none;margin-top:10px;padding:12px;border:1px dashed #b9c6d5;background:#f8fafc;border-radius:9px}
+.scanner.show{display:block}
+.scanner video{width:100%;max-height:280px;border-radius:8px;background:#0b1726}
+.scan-help{font-size:12px;color:#6d7888;margin-top:7px}
+.issue-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+@media(max-width:600px){
+ .scan-inline{flex-wrap:wrap}
+ .scan-inline input{min-width:100%}
+ .label-card{width:100%}
+}
+@media print{
+ body{background:#fff}
+ body *{visibility:hidden!important}
+ #printLabel,#printLabel *{visibility:visible!important}
+ #printLabel{position:absolute;left:0;top:0}
+ .print-label{width:50mm;min-height:30mm;border:1px solid #000;padding:3mm;font-family:Arial,sans-serif;background:#fff}
+ .print-label .pbrand{font-size:7pt;font-weight:700}
+ .print-label .pcode{font-size:11pt;font-weight:800}
+ .print-label .pdesc{font-size:6.5pt;line-height:1.1}
+ .print-label svg{width:100%;height:auto}
+ .print-label .pfooter{font-size:6pt}
+}
+
+
+/* Flask/mobile layout enhancements */
+@media (max-width: 600px){
+  .app{display:block;min-height:100vh}
+  .sidebar{
+    position:static;
+    width:100%;
+    padding:10px;
+  }
+  .company-logo{height:70px;margin-bottom:4px}
+  .brand{padding:5px 8px 10px}
+  .nav{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+  .nav button{margin:0;padding:10px 8px;font-size:12px}
+  .main{
+    margin-left:0;
+    width:100%;
+    padding:14px 10px 30px;
+  }
+  .top{align-items:flex-start;gap:10px;flex-wrap:wrap}
+  .top h1{font-size:21px}
+  .user{font-size:11px}
+  .stats{grid-template-columns:1fr 1fr;gap:8px}
+  .card{padding:13px}
+  .value{font-size:21px}
+  .toolbar{flex-wrap:wrap}
+  .toolbar .search{min-width:100%}
+  .panel{overflow-x:auto}
+  .table{min-width:700px}
+  .formgrid{grid-template-columns:1fr}
+  .field.full{grid-column:auto}
+  .detail{grid-template-columns:1fr}
+  .modal{padding:8px}
+  .modalbox{max-height:94vh;padding:14px}
+  .kv{grid-template-columns:110px 1fr}
+  .issue-actions .btn{width:100%}
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+    <img src="{{ url_for('static', filename='logo.jpg') }}"
+     class="company-logo"
+     alt="Company Logo"> 
+  <div class="brand">ScanMAT<span>Digital Warehouse Archive</span></div>
+  <div class="nav">
+    <button class="active" onclick="showPage('dashboard',this)">▦ Dashboard</button>
+    <button onclick="showPage('archive',this)">▣ Material Archive</button>
+    <button onclick="showPage('register',this)">＋ Register Material</button>
+    <button onclick="showPage('barcodeGenerator',this)">▤ Barcode Generator</button>
+    <button onclick="showPage('locations',this)">⌂ Bin Locations</button>
+    <button onclick="showPage('issue',this)">↗ Issue Material</button>
+    <button onclick="showPage('transactions',this)">↻ Issue Transactions</button>
+  </div>
+</aside>
+
+<main class="main">
+<section id="dashboard" class="page active">
+  <div class="top"><div><h1>ScanMAT</h1><p>Visual-first material identification, tracking and retrieval</p></div><div class="user">ANKUR THAKURIA : 100880</div></div>
+  <div class="stats">
+    <div class="card"><div class="label">TOTAL MATERIAL RECORDS</div><div class="value" id="statTotal">0</div></div>
+    <div class="card"><div class="label">MATERIALS RECEIVED</div><div class="value" id="statReceived">0</div></div>
+    <div class="card"><div class="label">BIN LOCATIONS</div><div class="value" id="statBins">0</div></div>
+    <div class="card"><div class="label">WITH PHOTOGRAPHS</div><div class="value" id="statPhotos">0</div></div>
+  </div>
+  <div class="notice">Main workflow: <b>Receive → Photograph → Register → Assign Bin → Search → Retrieve</b>. The photograph is the primary visual identification record.</div>
+  <div class="toolbar"><input class="search" id="dashSearch" placeholder="Search Material Code, Description, Bin Location..." oninput="renderRecent(this.value)"><button class="btn primary" onclick="showPage('register')">＋ Register Material</button></div>
+  <div class="panel"><table class="table"><thead><tr><th>PHOTO</th><th>MATERIAL CODE</th><th>DESCRIPTION</th><th>BIN</th><th>RECEIVED</th><th>STATUS</th></tr></thead><tbody id="recent"></tbody></table></div>
+</section>
+
+<section id="archive" class="page">
+  <div class="top"><div><h1>Material Archive</h1><p>Search and open the complete visual record of incoming materials.</p></div></div>
+  <div class="toolbar"><input class="search" id="archiveSearch" placeholder="Search by code, description, supplier, PO or bin..." oninput="renderArchive(this.value)"><button class="btn secondary" onclick="exportCSV()">Export CSV</button></div>
+  <div class="panel"><table class="table"><thead><tr><th>PHOTO</th><th>CODE</th><th>DESCRIPTION</th><th>BIN</th><th>SUPPLIER</th><th>RECEIVED</th><th></th></tr></thead><tbody id="archiveRows"></tbody></table></div>
+</section>
+
+<section id="register" class="page">
+  <div class="top"><div><h1>Register Incoming Material</h1><p>Create a permanent digital archive record before putting the material away.</p></div></div>
+  <div class="panel" style="padding:22px">
+    <form id="materialForm" class="formgrid">
+      <div class="field"><label>Material Code *</label>
+  <div class="scan-inline">
+    <input id="regCode" name="code" required placeholder="e.g. M-VLVE-00437">
+    <button type="button" class="btn secondary scan-btn" onclick="toggleScanner('registerScanner')">▣ Scan</button>
+  </div>
+  <div id="registerScanner" class="scanner">
+    <video playsinline></video>
+    <div class="scan-help">Point the camera at the QR Code or supported barcode. On Android, allow camera permission when prompted.</div>
+    <button type="button" class="btn secondary" onclick="stopScanner()">Close Scanner</button>
+  </div>
+</div>
+      <div class="field"><label>Material Description *</label><input name="desc" required placeholder="Standardized material description"></div>
+      <div class="field"><label>Bin Location *</label><input name="bin" required placeholder="e.g. WH01 L76/A5"></div>
+      <div class="field"><label>Supplier / Manufacturer</label><input name="supplier" placeholder="Supplier name"></div>
+      <div class="field"><label>PO / GRN Number</label><input name="grn" placeholder="PO / GRN reference"></div>
+      <div class="field"><label>Quantity Received</label><input name="qty" type="number" min="0" value="1"></div>
+      <div class="field"><label>Unit of Measure</label><select name="uom"><option>NOS</option><option>EA</option><option>SET</option><option>KG</option><option>M</option><option>LTR</option><option>BOX</option></select></div>
+      <div class="field"><label>Received Date</label><input name="date" type="date"></div>
+      <div class="field full"><label>Material Photograph *</label><div class="upload">
+        <input id="photo" type="file" accept="image/*" required>
+        <div>Upload / capture the material photograph</div>
+        <img id="preview">
+      </div></div>
+      <div class="field full"><label>Remarks</label><textarea name="remarks" rows="3" placeholder="Condition, identification marks, serial number, preservation notes..."></textarea></div>
+      <div class="field full"><button class="btn primary" type="submit">Save Digital Archive Record</button></div>
+    </form>
+  </div>
+  <div id="codebox" class="qrbar-panel" style="display:none">
+    <h3>Generated QR / Barcode Label</h3>
+    <div class="label-preview">
+      <div class="label-card">
+        <div class="label-brand">DIGITAL WAREHOUSE ARCHIVE</div>
+        <div id="labelCode" class="label-code"></div>
+        <div id="labelDesc" class="label-desc"></div>
+        <div class="barcode-wrap"><svg id="barcode"></svg></div>
+        <div id="qrcode" class="qr-wrap"></div>
+        <div class="label-footer"><span id="labelBin"></span><span>QR + CODE128</span></div>
+      </div>
+    </div>
+    <div class="issue-actions">
+      <button type="button" class="btn primary" onclick="printCurrentLabel()">🖨 Print Label</button>
+      <button type="button" class="btn secondary" onclick="downloadBarcode()">Download Barcode</button>
+      <button type="button" class="btn secondary" onclick="showPage('barcodeGenerator'); document.getElementById('generatorCode').value=currentLabelRecord?currentLabelRecord.code:''; document.getElementById('generatorDesc').value=currentLabelRecord?currentLabelRecord.desc||'':''; document.getElementById('generatorBin').value=currentLabelRecord?currentLabelRecord.bin||'':''; generateStandaloneBarcode();">Open Barcode Generator</button>
+    </div>
+  </div>
+</section>
+
+<section id="barcodeGenerator" class="page">
+  <div class="top"><div><h1>Barcode Generator</h1><p>Barcode label from the Material Code.</p></div></div>
+  <div class="panel" style="padding:22px">
+    <div class="formgrid">
+      <div class="field">
+        <label>Material Code *</label>
+        <input id="generatorCode" placeholder="e.g. M-VLVE-00437" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Material Description</label>
+        <input id="generatorDesc" placeholder="Material description">
+      </div>
+      <div class="field">
+        <label>Bin Location</label>
+        <input id="generatorBin" placeholder="e.g. WH01 L34/B2">
+      </div>
+      <div class="field">
+        <label>Label Size</label>
+        <select id="generatorSize">
+          <option value="small">40 × 25 mm</option>
+          <option value="medium" selected>50 × 30 mm</option>
+          <option value="large">70 × 40 mm</option>
+        </select>
+      </div>
+      <div class="field full issue-actions">
+        <button type="button" class="btn primary" onclick="generateStandaloneBarcode()">▤ Generate Barcode</button>
+        <button type="button" class="btn secondary" onclick="generateFromMaterialCode()">Use Material Archive Record</button>
+        <button type="button" class="btn secondary" onclick="printStandaloneBarcode()">🖨 Print Label</button>
+        <button type="button" class="btn secondary" onclick="downloadStandaloneBarcode()">Download SVG</button>
+      </div>
+    </div>
+    <div id="standaloneBarcodeResult" class="qrbar-panel" style="display:none">
+      <h3>Professional Warehouse Barcode Label</h3>
+      <div class="label-preview">
+        <div id="standaloneLabel" class="label-card">
+          <div class="label-brand">DIGITAL WAREHOUSE ARCHIVE</div>
+          <div id="standaloneLabelCode" class="label-code"></div>
+          <div id="standaloneLabelDesc" class="label-desc"></div>
+          <div class="barcode-wrap"><svg id="standaloneBarcode"></svg></div>
+          <div id="standaloneLabelBin" class="label-footer"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="issue" class="page">
+  <div class="top"><div><h1>Issue Material</h1><p>Scan or enter the Material Code, verify availability and record the issue.</p></div></div>
+  <div class="panel" style="padding:22px">
+    <div class="field">
+      <label>Material Code *</label>
+      <div class="scan-inline">
+        <input id="issueCode" placeholder="Scan or enter Material Code">
+        <button type="button" class="btn secondary scan-btn" onclick="toggleScanner('issueScanner')">▣ Scan</button>
+        <button type="button" class="btn primary" onclick="findIssueMaterial()">Find</button>
+      </div>
+      <div id="issueScanner" class="scanner">
+        <video playsinline></video>
+        <div class="scan-help">Scan the QR Code or supported barcode attached to the material.</div>
+        <button type="button" class="btn secondary" onclick="stopScanner()">Close Scanner</button>
+      </div>
+    </div>
+
+    <div id="issueMaterialInfo" class="issue-info">
+      <h3 id="issueDesc" style="margin:0 0 5px;color:#10243e"></h3>
+      <div id="issueMeta" style="font-size:13px;color:#657286"></div>
+      <div class="available-box"><span id="issueAvailable">0</span> <span id="issueUom"></span> available</div>
+
+      <div class="formgrid">
+        <div class="field"><label>Issue Quantity *</label><input id="issueQty" type="number" min="0.000001" step="any"></div>
+        <div class="field"><label>Issue Date *</label><input id="issueDate" type="date"></div>
+        <div class="field"><label>Issued To / Department *</label><input id="issueTo" placeholder="Person / Department / Section"></div>
+        <div class="field"><label>Reference / Work Order</label><input id="issueRef" placeholder="Optional reference"></div>
+        <div class="field full"><label>Remarks</label><textarea id="issueRemarks" rows="3" placeholder="Issue remarks..."></textarea></div>
+        <div class="field full"><button type="button" class="btn danger" onclick="issueMaterial()">Issue Material</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="transactions" class="page">
+  <div class="top"><div><h1>Issue Transactions</h1><p>History of material issues recorded through the Digital Warehouse Archive.</p></div></div>
+  <div class="toolbar">
+    <input class="search" id="issueSearch" placeholder="Search issue date, material code, description, department or reference..." oninput="renderIssues(this.value)">
+    <button class="btn secondary" onclick="exportIssuesCSV()">Export CSV</button>
+  </div>
+  <div class="panel"><table class="table"><thead><tr><th>DATE</th><th>CODE</th><th>DESCRIPTION</th><th>ISSUED QTY</th><th>ISSUED TO</th><th>REFERENCE</th><th>BALANCE</th></tr></thead><tbody id="issueRows"></tbody></table></div>
+</section>
+
+<section id="locations" class="page">
+  <div class="top"><div><h1>Bin Location View</h1><p>Quick overview of materials stored at each location.</p></div></div>
+  <div class="panel"><table class="table"><thead><tr><th>BIN LOCATION</th><th>MATERIAL RECORDS</th><th>ITEMS</th><th>LAST RECEIVED</th></tr></thead><tbody id="binRows"></tbody></table></div>
+</section>
+</main>
+</div>
+
+<div id="printLabel" class="print-only"></div>
+
+<div class="modal" id="modal"><div class="modalbox"><div class="modalhead"><h2>Material Digital Record</h2><button class="btn secondary" onclick="closeModal()">Close</button></div><div class="detail" id="detail"></div></div></div>
+
+<script>
+const KEY='DWA_ARCHIVE_V1';
+const ISSUE_KEY='DWA_ISSUES_V1';
+
+let records=JSON.parse(localStorage.getItem(KEY)||'[]');
+let issues=JSON.parse(localStorage.getItem(ISSUE_KEY)||'[]');
+let activeStream=null;
+let scanTimer=null;
+let currentLabelRecord=null;
+
+
+function generateStandaloneBarcode(){
+  const code=document.getElementById('generatorCode').value.trim();
+  if(!code){alert('Enter the Material Code first.');return false;}
+  if(!window.JsBarcode){alert('Barcode generator library is not loaded. Please check your internet connection and reload the page.');return false;}
+
+  const desc=document.getElementById('generatorDesc').value.trim();
+  const bin=document.getElementById('generatorBin').value.trim();
+  const size=document.getElementById('generatorSize').value;
+  const svg=document.getElementById('standaloneBarcode');
+
+  document.getElementById('standaloneLabelCode').textContent=code;
+  document.getElementById('standaloneLabelDesc').textContent=desc;
+  document.getElementById('standaloneLabelBin').textContent='BIN: '+(bin||'-');
+  svg.innerHTML='';
+
+  const cfg={
+    format:'CODE128',
+    lineColor:'#10243e',
+    background:'#ffffff',
+    displayValue:true,
+    fontOptions:'bold',
+    text:code,
+    textAlign:'center',
+    textPosition:'bottom',
+    font:'Arial',
+    margin:6,
+    width:size==='small'?1.7:(size==='large'?2.4:2),
+    height:size==='small'?42:(size==='large'?64:52),
+    fontSize:size==='small'?10:(size==='large'?14:12)
+  };
+  try{ JsBarcode(svg,code,cfg); }
+  catch(e){ alert('Unable to generate barcode. Please use letters/numbers only in the Material Code.'); return false; }
+
+  document.getElementById('standaloneBarcodeResult').style.display='block';
+  return true;
+}
+
+function generateFromMaterialCode(){
+  const code=document.getElementById('generatorCode').value.trim();
+  const r=records.find(x=>String(x.code).toLowerCase()===code.toLowerCase());
+  if(!r){alert('Material Code not found in the Digital Archive. Enter a valid code or register the material first.');return;}
+  document.getElementById('generatorDesc').value=r.desc||'';
+  document.getElementById('generatorBin').value=r.bin||'';
+  generateStandaloneBarcode();
+}
+
+function printStandaloneBarcode(){
+  if(document.getElementById('standaloneBarcodeResult').style.display==='none'){
+    if(!generateStandaloneBarcode()) return;
+  }
+  const code=document.getElementById('generatorCode').value.trim();
+  const desc=document.getElementById('generatorDesc').value.trim();
+  const bin=document.getElementById('generatorBin').value.trim();
+  const svg=document.getElementById('standaloneBarcode').outerHTML;
+  const w=window.open('', '_blank', 'width=500,height=400');
+  if(!w){alert('Please allow pop-ups to print the label.');return;}
+  w.document.write(`<!doctype html><html><head><title>Barcode Label - ${escapeHtml(code)}</title><style>
+    @page{margin:4mm}body{margin:0;font-family:Arial,sans-serif;background:#fff}.label{width:50mm;min-height:30mm;border:1px solid #111;padding:3mm;box-sizing:border-box}.brand{font-size:7pt;font-weight:700;color:#10243e;letter-spacing:.3px}.code{font-size:11pt;font-weight:800;margin:1mm 0;color:#10243e}.desc{font-size:6.5pt;line-height:1.1;min-height:7mm}.barcode{width:100%;height:auto}.footer{font-size:6pt;display:flex;justify-content:space-between;margin-top:1mm;color:#333}
+  </style></head><body><div class="label"><div class="brand">DIGITAL WAREHOUSE ARCHIVE</div><div class="code">${escapeHtml(code)}</div><div class="desc">${escapeHtml(desc)}</div><div class="barcode">${svg}</div><div class="footer"><span>BIN: ${escapeHtml(bin||'-')}</span><span>CODE128</span></div></div><script>window.onload=function(){window.print();}<\/script></body></html>`);
+  w.document.close();
+}
+
+function downloadStandaloneBarcode(){
+  if(document.getElementById('standaloneBarcodeResult').style.display==='none'){
+    if(!generateStandaloneBarcode()) return;
+  }
+  const code=document.getElementById('generatorCode').value.trim()||'barcode';
+  const svg=document.getElementById('standaloneBarcode');
+  const source='<?xml version="1.0" encoding="UTF-8"?>\n'+svg.outerHTML;
+  const blob=new Blob([source],{type:'image/svg+xml;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=code+'_CODE128.svg';document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+function seed(){
+ if(records.length) return;
+ records=[
+ {id:1,code:'MAT-000101',desc:'CURRENT TRANSFORMER 11KV 300/5A',bin:'WH03-A-01-02',supplier:'ABC Electricals',grn:'GRN-260801',qty:2,uom:'EA',date:'2026-08-01',photo:'',remarks:'Visual inspection completed.'},
+ {id:2,code:'MAT-000102',desc:'ANTIFOAM AGENT P-CHEM-00005',bin:'CHEM-B-03-01',supplier:'XYZ Chemicals',grn:'GRN-260804',qty:20,uom:'LTR',date:'2026-08-04',photo:'',remarks:'Store under recommended conditions.'},
+ {id:3,code:'MAT-000103',desc:'CABLE GLAND M32 SS IP68',bin:'ELEC-C-02-06',supplier:'Industrial Supplies',grn:'GRN-260810',qty:50,uom:'EA',date:'2026-08-10',photo:'',remarks:''}
+ ];
+ save();
+}
+
+function migrateRecords(){
+ let changed=false;
+ records.forEach(r=>{
+   if(typeof r.available!=='number'){
+     r.available=+r.qty||0;
+     changed=true;
+   }
+ });
+ if(changed)localStorage.setItem(KEY,JSON.stringify(records));
+}
+
+function save(){
+ localStorage.setItem(KEY,JSON.stringify(records));
+ updateStats();
+ renderRecent();
+ renderArchive();
+ renderBins();
+ renderIssues();
+}
+
+function saveIssues(){localStorage.setItem(ISSUE_KEY,JSON.stringify(issues));}
+
+function available(r){
+ return Math.max(0, +(r.available!=null?r.available:r.qty)||0);
+}
+
+function updateStats(){
+ document.getElementById('statTotal').textContent=records.length;
+ document.getElementById('statReceived').textContent=records.reduce((a,r)=>a+(+r.qty||0),0);
+ document.getElementById('statBins').textContent=new Set(records.map(r=>r.bin)).size;
+ document.getElementById('statPhotos').textContent=records.filter(r=>r.photo).length;
+}
+
+function showPage(id,btn){
+ stopScanner();
+ document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+ const page=document.getElementById(id);
+ if(page)page.classList.add('active');
+ document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+ if(btn)btn.classList.add('active');
+ if(id==='archive')renderArchive(document.getElementById('archiveSearch').value);
+ if(id==='transactions')renderIssues(document.getElementById('issueSearch').value);
+ if(id==='locations')renderBins();
+}
+
+function img(r){
+ return r.photo?`<img class="thumb" src="${r.photo}">`:`<div class="thumb"></div>`;
+}
+
+function match(r,q){
+ q=(q||'').toLowerCase();
+ return [r.code,r.desc,r.bin,r.supplier,r.grn].join(' ').toLowerCase().includes(q);
+}
+
+function renderRecent(q=''){
+ const rows=records.filter(r=>match(r,q)).slice().reverse().slice(0,12);
+ document.getElementById('recent').innerHTML=rows.length?
+ rows.map(r=>`<tr><td>${img(r)}</td><td><b>${r.code}</b></td><td>${r.desc}</td><td>${r.bin}</td><td>${r.date||'-'}</td><td><span class="badge">Archived</span></td></tr>`).join(''):
+ `<tr><td colspan="6" class="empty">No records found.</td></tr>`;
+}
+
+function renderArchive(q=''){
+ const rows=records.filter(r=>match(r,q)).slice().reverse();
+ document.getElementById('archiveRows').innerHTML=rows.length?
+ rows.map(r=>`<tr><td>${img(r)}</td><td><b>${r.code}</b></td><td>${r.desc}</td><td>${r.bin}</td><td>${r.supplier||'-'}</td><td>${r.date||'-'}</td><td><button class="btn secondary" onclick="openRecord(${r.id})">View</button></td></tr>`).join(''):
+ `<tr><td colspan="7" class="empty">No material records found.</td></tr>`;
+}
+
+function renderBins(){
+ const map={};
+ records.forEach(r=>{
+   if(!map[r.bin])map[r.bin]={n:0,q:0,date:''};
+   map[r.bin].n++;
+   map[r.bin].q+=available(r);
+   if(r.date>map[r.bin].date)map[r.bin].date=r.date;
+ });
+ document.getElementById('binRows').innerHTML=Object.entries(map).sort().map(([b,v])=>
+ `<tr><td><b>${b}</b></td><td>${v.n}</td><td>${v.q}</td><td>${v.date||'-'}</td></tr>`).join('')||
+ `<tr><td colspan="4" class="empty">No bin data.</td></tr>`;
+}
+
+function openRecord(id){
+ const r=records.find(x=>x.id===id);
+ if(!r)return;
+ document.getElementById('detail').innerHTML=
+ `<div>${r.photo?`<img src="${r.photo}">`:`<div style="height:350px;display:grid;place-items:center;background:#f2f5f8;border-radius:9px;color:#8290a2">No photograph stored</div>`}</div>
+ <div><h3>${r.desc}</h3>
+ <div class="kv"><b>Material Code</b><span>${r.code}</span></div>
+ <div class="kv"><b>Bin Location</b><span>${r.bin}</span></div>
+ <div class="kv"><b>Supplier</b><span>${r.supplier||'-'}</span></div>
+ <div class="kv"><b>PO / GRN</b><span>${r.grn||'-'}</span></div>
+ <div class="kv"><b>Quantity</b><span>${r.qty||0} ${r.uom||''}</span></div>
+ <div class="kv"><b>Available Quantity</b><span>${available(r)} ${r.uom||''}</span></div>
+ <div class="kv"><b>Received Date</b><span>${r.date||'-'}</span></div>
+ <div class="kv"><b>Remarks</b><span>${r.remarks||'-'}</span></div>
+ <div style="margin-top:15px"><button class="btn danger" onclick="closeModal();prepareIssue('${escapeJs(r.code)}')">Issue Material</button></div></div>`;
+ document.getElementById('modal').classList.add('show');
+}
+
+function closeModal(){document.getElementById('modal').classList.remove('show');}
+
+function escapeJs(s){
+ return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+}
+
+document.getElementById('photo').addEventListener('change',e=>{
+ const f=e.target.files[0];
+ if(!f)return;
+ const rd=new FileReader();
+ rd.onload=()=>{
+   const p=document.getElementById('preview');
+   p.src=rd.result;
+   p.style.display='block';
+ };
+ rd.readAsDataURL(f);
+});
+
+document.getElementById('materialForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ const f=new FormData(e.target);
+ const file=document.getElementById('photo').files[0];
+ const code=String(f.get('code')||'').trim();
+
+ if(records.some(r=>String(r.code).trim().toLowerCase()===code.toLowerCase())){
+   alert('This Material Code already exists. Use the existing record or another unique code.');
+   return;
+ }
+
+ const add=photo=>{
+   const qty=+f.get('qty')||0;
+   const rec={
+     id:Date.now(),
+     code:code,
+     desc:f.get('desc'),
+     bin:f.get('bin'),
+     supplier:f.get('supplier'),
+     grn:f.get('grn'),
+     qty:qty,
+     uom:f.get('uom'),
+     date:f.get('date'),
+     photo:photo,
+     remarks:f.get('remarks'),
+     available:qty
+   };
+   records.push(rec);
+   save();
+   currentLabelRecord=rec;
+   generateLabel(rec);
+   document.getElementById('codebox').style.display='block';
+   e.target.reset();
+   document.getElementById('preview').style.display='none';
+   document.getElementById('issueDate').value=new Date().toISOString().slice(0,10);
+   alert('Material archive record saved and QR / barcode generated.');
+ };
+
+ if(file){
+   const rd=new FileReader();
+   rd.onload=()=>add(rd.result);
+   rd.readAsDataURL(file);
+ }else{
+   add('');
+ }
+});
+
+function generateLabel(r){
+ if(!r)return;
+ currentLabelRecord=r;
+ document.getElementById('labelCode').textContent=r.code;
+ document.getElementById('labelDesc').textContent=r.desc||'';
+ document.getElementById('labelBin').textContent='BIN: '+(r.bin||'-');
+
+ const qr=document.getElementById('qrcode');
+ qr.innerHTML='';
+ if(window.QRCode){
+   new QRCode(qr,{
+     text:String(r.code),
+     width:88,
+     height:88,
+     colorDark:'#10243e',
+     colorLight:'#ffffff',
+     correctLevel:QRCode.CorrectLevel.M
+   });
+ }
+
+ const svg=document.getElementById('barcode');
+ svg.innerHTML='';
+ if(window.JsBarcode){
+   JsBarcode(svg,String(r.code),{
+     format:'CODE128',
+     lineColor:'#10243e',
+     background:'#ffffff',
+     width:2,
+     height:42,
+     displayValue:true,
+     fontSize:11,
+     margin:4
+   });
+ }
+}
+
+function printCurrentLabel(){
+ if(!currentLabelRecord){alert('Register a material first.');return;}
+ const r=currentLabelRecord;
+ document.getElementById('printLabel').innerHTML=
+ `<div class="print-label">
+   <div class="pbrand">DIGITAL WAREHOUSE ARCHIVE</div>
+   <div class="pcode">${escapeHtml(r.code)}</div>
+   <div class="pdesc">${escapeHtml(r.desc||'')}</div>
+   <svg id="printBarcode"></svg>
+   <div class="pfooter">BIN: ${escapeHtml(r.bin||'-')} <span>QR + CODE128</span></div>
+ </div>`;
+ if(window.JsBarcode){
+   JsBarcode('#printBarcode',String(r.code),{
+     format:'CODE128',
+     lineColor:'#000',
+     background:'#fff',
+     width:1.4,
+     height:34,
+     displayValue:true,
+     fontSize:8,
+     margin:1
+   });
+ }
+ window.print();
+}
+
+function downloadBarcode(){
+ if(!currentLabelRecord){alert('Register a material first.');return;}
+ const svg=document.getElementById('barcode');
+ if(!svg || !svg.outerHTML){alert('Barcode is not available.');return;}
+ const data='<?xml version="1.0" standalone="no"?>'+svg.outerHTML;
+ const blob=new Blob([data],{type:'image/svg+xml'});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');
+ a.href=url;
+ a.download=currentLabelRecord.code+'_barcode.svg';
+ document.body.appendChild(a);
+ a.click();
+ a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+function escapeHtml(s){
+ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+async function toggleScanner(id){
+ const box=document.getElementById(id);
+ if(!box)return;
+
+ if(box.classList.contains('show')){
+   stopScanner();
+   return;
+ }
+
+ if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+   alert('Camera scanning is not available in this browser. Please enter the Material Code manually.');
+   return;
+ }
+
+ if(!('BarcodeDetector' in window)){
+   alert('This browser does not support native QR/barcode scanning. Chrome on Android is recommended, or enter the Material Code manually.');
+   return;
+ }
+
+ try{
+   const supported=await BarcodeDetector.getSupportedFormats();
+   const preferred=['qr_code','code_128','code_39','ean_13','ean_8','upc_a','upc_e'];
+   const formats=preferred.filter(x=>supported.includes(x));
+   if(!formats.length){
+     alert('No supported QR/barcode format is available in this browser.');
+     return;
+   }
+
+   const detector=new BarcodeDetector({formats});
+   const video=box.querySelector('video');
+   activeStream=await navigator.mediaDevices.getUserMedia({
+     video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},
+     audio:false
+   });
+   video.srcObject=activeStream;
+   box.classList.add('show');
+   await video.play();
+
+   scanTimer=setInterval(async()=>{
+     try{
+       if(video.readyState<2)return;
+       const codes=await detector.detect(video);
+       if(codes && codes.length){
+         const value=(codes[0].rawValue||'').trim();
+         if(value){
+           handleScannedCode(value);
+           stopScanner();
+         }
+       }
+     }catch(err){}
+   },300);
+
+ }catch(err){
+   stopScanner();
+   alert('Camera access was not available. Please allow camera permission and try again, or enter the Material Code manually.');
+ }
+}
+
+function handleScannedCode(value){
+ const clean=String(value||'').trim();
+ if(!clean)return;
+
+ const reg=document.getElementById('regCode');
+ const issue=document.getElementById('issueCode');
+
+ if(reg && document.getElementById('register').classList.contains('active')){
+   reg.value=clean;
+ }
+ if(issue && document.getElementById('issue').classList.contains('active')){
+   issue.value=clean;
+   findIssueMaterial();
+ }
+}
+
+function stopScanner(){
+ if(scanTimer){
+   clearInterval(scanTimer);
+   scanTimer=null;
+ }
+ if(activeStream){
+   activeStream.getTracks().forEach(t=>t.stop());
+   activeStream=null;
+ }
+ document.querySelectorAll('.scanner').forEach(x=>x.classList.remove('show'));
+ document.querySelectorAll('.scanner video').forEach(v=>{
+   try{v.pause();v.srcObject=null;}catch(e){}
+ });
+}
+
+function findIssueMaterial(){
+ const code=document.getElementById('issueCode').value.trim().toLowerCase();
+ const r=records.find(x=>String(x.code).toLowerCase()===code);
+
+ if(!r){
+   document.getElementById('issueMaterialInfo').classList.remove('show');
+   alert('Material Code not found in the Digital Archive.');
+   return;
+ }
+
+ document.getElementById('issueMaterialInfo').classList.add('show');
+ document.getElementById('issueDesc').textContent=r.desc;
+ document.getElementById('issueMeta').textContent=`Code: ${r.code} | Bin: ${r.bin} | GRN: ${r.grn||'-'}`;
+ document.getElementById('issueAvailable').textContent=available(r);
+ document.getElementById('issueUom').textContent=r.uom||'';
+ document.getElementById('issueQty').max=available(r);
+ document.getElementById('issueQty').value='';
+}
+
+function prepareIssue(code){
+ showPage('issue');
+ document.getElementById('issueCode').value=code;
+ findIssueMaterial();
+}
+
+function issueMaterial(){
+ const code=document.getElementById('issueCode').value.trim();
+ const r=records.find(x=>String(x.code).toLowerCase()===code.toLowerCase());
+
+ if(!r){alert('Please scan or enter a valid Material Code first.');return;}
+
+ const q=+document.getElementById('issueQty').value;
+ const to=document.getElementById('issueTo').value.trim();
+ const date=document.getElementById('issueDate').value;
+ const ref=document.getElementById('issueRef').value.trim();
+ const remarks=document.getElementById('issueRemarks').value.trim();
+ const av=available(r);
+
+ if(!q||q<=0){alert('Enter a valid issue quantity.');return;}
+ if(q>av){alert(`Issue quantity cannot exceed available quantity (${av} ${r.uom||''}).`);return;}
+ if(!to){alert('Enter Issued To / Department.');return;}
+ if(!date){alert('Select Issue Date.');return;}
+
+ r.available=+(av-q).toFixed(6);
+
+ issues.push({
+   id:Date.now(),
+   date:date,
+   code:r.code,
+   desc:r.desc,
+   qty:q,
+   uom:r.uom||'',
+   to:to,
+   ref:ref,
+   remarks:remarks,
+   balance:r.available,
+   bin:r.bin
+ });
+
+ save();
+ saveIssues();
+
+ document.getElementById('issueQty').value='';
+ document.getElementById('issueTo').value='';
+ document.getElementById('issueRef').value='';
+ document.getElementById('issueRemarks').value='';
+ document.getElementById('issueAvailable').textContent=r.available;
+
+ alert(`Material issued successfully. Balance: ${r.available} ${r.uom||''}`);
+ renderIssues();
+}
+
+function renderIssues(q=''){
+ q=(q||'').toLowerCase();
+ const rows=issues.slice().reverse().filter(x=>
+   [x.code,x.desc,x.to,x.ref,x.date,x.bin].join(' ').toLowerCase().includes(q)
+ );
+
+ document.getElementById('issueRows').innerHTML=rows.length?
+ rows.map(x=>`<tr><td>${x.date}</td><td><b>${x.code}</b></td><td>${x.desc}</td><td><b>${x.qty}</b> ${x.uom}</td><td>${x.to}</td><td>${x.ref||'-'}</td><td>${x.balance} ${x.uom}</td></tr>`).join(''):
+ `<tr><td colspan="7" class="empty">No issue transactions found.</td></tr>`;
+}
+
+function exportCSV(){
+ let csv='Material Code,Description,Bin Location,Supplier,PO/GRN,Quantity,UOM,Received Date,Remarks\n';
+ records.forEach(r=>{
+   csv+=`"${csvSafe(r.code)}","${csvSafe(r.desc)}","${csvSafe(r.bin)}","${csvSafe(r.supplier||'')}","${csvSafe(r.grn||'')}","${r.qty||''}","${csvSafe(r.uom||'')}","${csvSafe(r.date||'')}","${csvSafe(r.remarks||'')}"\n`;
+ });
+ downloadText(csv,'warehouse_archive.csv','text/csv');
+}
+
+function exportIssuesCSV(){
+ let csv='Issue Date,Material Code,Description,Issued Quantity,UOM,Issued To,Reference,Bin,Remarks,Balance Quantity\n';
+ issues.forEach(x=>{
+   csv+=`"${csvSafe(x.date)}","${csvSafe(x.code)}","${csvSafe(x.desc)}","${x.qty}","${csvSafe(x.uom)}","${csvSafe(x.to)}","${csvSafe(x.ref||'')}","${csvSafe(x.bin||'')}","${csvSafe(x.remarks||'')}","${x.balance}"\n`;
+ });
+ downloadText(csv,'warehouse_issue_transactions.csv','text/csv');
+}
+
+function csvSafe(v){
+ return String(v??'').replace(/"/g,'""');
+}
+
+function downloadText(text,name,type){
+ const a=document.createElement('a');
+ const url=URL.createObjectURL(new Blob([text],{type}));
+ a.href=url;
+ a.download=name;
+ document.body.appendChild(a);
+ a.click();
+ a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+document.getElementById('issueDate').value=new Date().toISOString().slice(0,10);
+
+seed();
+migrateRecords();
+updateStats();
+renderRecent();
+renderArchive();
+renderBins();
+renderIssues();
+</script>
+</body>
+</html>
