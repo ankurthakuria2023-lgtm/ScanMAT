@@ -123,7 +123,7 @@
 
 <main class="main">
 <section id="dashboard" class="page active">
-  <div class="top"><div><h1>ScanMAT</h1><p>Visual-first material identification, tracking and retrieval</p></div><div class="user">ANKUR THAKURIA : 100880</div></div>
+  <div class="top"><div><h1>ScanMAT</h1><p></p></div><div class="user">ANKUR THAKURIA : 100880</div></div>
   <div class="stats">
     <div class="card"><div class="label">TOTAL MATERIAL RECORDS</div><div class="value" id="statTotal">0</div></div>
     <div class="card"><div class="label">MATERIALS RECEIVED</div><div class="value" id="statReceived">0</div></div>
@@ -224,7 +224,7 @@
       </div>
     </div>
     <div id="standaloneBarcodeResult" class="qrbar-panel" style="display:none">
-      <h3>Professional Warehouse Barcode Label</h3>
+      <h3>Warehouse Barcode Label</h3>
       <div class="label-preview">
         <div id="standaloneLabel" class="label-card">
           <div class="label-brand">DIGITAL WAREHOUSE ARCHIVE</div>
@@ -381,9 +381,9 @@ function downloadStandaloneBarcode(){
 function seed(){
  if(records.length) return;
  records=[
- {id:1,code:'MAT-000101',desc:'CURRENT TRANSFORMER 11KV 300/5A',bin:'WH03-A-01-02',supplier:'ABC Electricals',grn:'GRN-260801',qty:2,uom:'EA',date:'2026-08-01',photo:'',remarks:'Visual inspection completed.'},
- {id:2,code:'MAT-000102',desc:'ANTIFOAM AGENT P-CHEM-00005',bin:'CHEM-B-03-01',supplier:'XYZ Chemicals',grn:'GRN-260804',qty:20,uom:'LTR',date:'2026-08-04',photo:'',remarks:'Store under recommended conditions.'},
- {id:3,code:'MAT-000103',desc:'CABLE GLAND M32 SS IP68',bin:'ELEC-C-02-06',supplier:'Industrial Supplies',grn:'GRN-260810',qty:50,uom:'EA',date:'2026-08-10',photo:'',remarks:''}
+ {id:1,code:'E-MO-MO-15-C',desc:'CURRENT TRANSFORMER 11KV 300/5A',bin:'WH03-A-01-02',supplier:'ABC Electricals',grn:'GRN-260801',qty:2,uom:'EA',date:'2026-08-01',photo:'',remarks:'Visual inspection completed.'},
+ {id:2,code:'M-VLVE-0782',desc:'ANTIFOAM AGENT P-CHEM-00005',bin:'CHEM-B-03-01',supplier:'XYZ Chemicals',grn:'GRN-260804',qty:20,uom:'LTR',date:'2026-08-04',photo:'',remarks:'Store under recommended conditions.'},
+ {id:3,code:'P-CHEM-0008',desc:'CABLE GLAND M32 SS IP68',bin:'ELEC-C-02-06',supplier:'Industrial Supplies',grn:'GRN-260810',qty:50,uom:'EA',date:'2026-08-10',photo:'',remarks:''}
  ];
  save();
 }
