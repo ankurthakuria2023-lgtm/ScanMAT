@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ScanMAT | Smart Material Tracking & Digital Archive System</title>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:#f3f6fa;color:#172033}
 .app{display:flex;min-height:100vh}.sidebar{width:250px;background:#10243e;color:#fff;padding:22px 16px;position:fixed;inset:0 auto 0 0}.brand{font-size:19px;font-weight:700;padding:8px 10px 28px}.brand span{display:block;font-size:11px;font-weight:400;color:#aebed2;margin-top:5px}.nav button{width:100%;border:0;background:transparent;color:#d8e2ef;text-align:left;padding:13px 12px;border-radius:8px;margin:3px 0;cursor:pointer;font-size:14px}.nav button.active,.nav button:hover{background:#1d426b;color:#fff}.main{margin-left:250px;width:calc(100% - 250px);padding:25px 30px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.top h1{margin:0;font-size:25px}.top p{margin:5px 0 0;color:#6d7888;font-size:13px}.user{background:#fff;padding:9px 14px;border-radius:8px;border:1px solid #e0e6ed;font-size:13px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:20px}.card{background:#fff;border:1px solid #e2e8ef;border-radius:11px;padding:18px;box-shadow:0 2px 8px #1720330b}.label{color:#738096;font-size:12px}.value{font-size:26px;font-weight:700;margin-top:7px}.toolbar{display:flex;gap:10px;margin-bottom:16px}.search{flex:1;padding:12px 14px;border:1px solid #d7dfe8;border-radius:8px;background:#fff}.btn{border:0;border-radius:8px;padding:11px 15px;cursor:pointer;font-weight:600}.primary{background:#1769aa;color:#fff}.secondary{background:#fff;border:1px solid #d5dde7;color:#26364a}.panel{background:#fff;border:1px solid #e2e8ef;border-radius:11px;overflow:hidden}.table{width:100%;border-collapse:collapse;font-size:13px}.table th{background:#f7f9fb;color:#647185;text-align:left;font-weight:600}.table th,.table td{padding:12px;border-bottom:1px solid #edf1f5}.thumb{width:58px;height:48px;border-radius:6px;object-fit:cover;background:#eef2f6}.badge{padding:5px 8px;border-radius:20px;background:#e9f5ed;color:#267343;font-size:11px}.empty{padding:40px;text-align:center;color:#7c8796}.page{display:none}.page.active{display:block}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.field label{display:block;font-size:12px;color:#596779;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;padding:11px;border:1px solid #d5dde7;border-radius:7px}.field.full{grid-column:1/-1}.upload{border:2px dashed #cbd6e2;border-radius:10px;padding:25px;text-align:center;color:#748197}.upload img{max-width:260px;max-height:180px;display:none;margin:10px auto;border-radius:8px}.modal{position:fixed;inset:0;background:#09162599;display:none;align-items:center;justify-content:center;padding:20px}.modal.show{display:flex}.modalbox{background:#fff;border-radius:12px;max-width:900px;width:100%;max-height:90vh;overflow:auto;padding:22px}.modalhead{display:flex;justify-content:space-between;align-items:center}.modalhead h2{margin:0}.detail{display:grid;grid-template-columns:1fr 1.2fr;gap:20px;margin-top:18px}.detail img{width:100%;max-height:430px;object-fit:contain;background:#f2f5f8;border-radius:9px}.kv{display:grid;grid-template-columns:140px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid #edf1f5;font-size:13px}.kv b{color:#657286}.notice{padding:12px;background:#eef7ff;border-left:4px solid #1769aa;border-radius:5px;color:#35506d;font-size:13px;margin-bottom:16px}
@@ -14,8 +14,6 @@
 .scan-inline{display:flex;gap:8px;align-items:center}
 .scan-inline input{flex:1}
 .scan-btn{white-space:nowrap}
-.qrbar-panel{margin-top:18px;padding:18px;border:1px solid #e2e8ef;border-radius:10px;background:#f8fafc}
-.qrbar-panel h3{margin:0 0 12px;color:#10243e}
 .label-preview{display:flex;justify-content:center}
 .label-card{width:360px;max-width:100%;background:#fff;border:1px solid #cfd8e3;border-radius:8px;padding:14px;box-shadow:0 2px 8px #17203312}
 .label-brand{font-size:10px;font-weight:700;color:#647185;letter-spacing:.5px}
@@ -23,8 +21,6 @@
 .label-desc{font-size:10px;color:#4e5c6f;margin-bottom:8px;line-height:1.25}
 .barcode-wrap{text-align:center}
 .barcode-wrap svg{max-width:100%;height:auto}
-.qr-wrap{text-align:center;margin-top:7px}
-.qr-wrap img,.qr-wrap canvas{max-width:90px}
 .label-footer{display:flex;justify-content:space-between;font-size:8px;color:#69778a;margin-top:6px}
 .issue-info{display:none;margin-top:15px;padding:16px;background:#f8fafc;border:1px solid #dfe6ee;border-radius:9px}
 /* COMPANY LOGO */
@@ -56,12 +52,12 @@
  body *{visibility:hidden!important}
  #printLabel,#printLabel *{visibility:visible!important}
  #printLabel{position:absolute;left:0;top:0}
- .print-label{width:50mm;min-height:30mm;border:1px solid #000;padding:3mm;font-family:Arial,sans-serif;background:#fff}
- .print-label .pbrand{font-size:7pt;font-weight:700}
- .print-label .pcode{font-size:11pt;font-weight:800}
- .print-label .pdesc{font-size:6.5pt;line-height:1.1}
+ .print-label{width:60mm;min-height:38mm;border:1px solid #9aa8b8;border-radius:2mm;padding:3mm;font-family:Arial,sans-serif;background:#fff}
+ .print-label .pbrand{font-size:7pt;font-weight:700;color:#10243e;letter-spacing:.4px;border-bottom:1px solid #d9e1e9;padding-bottom:1.5mm;margin-bottom:1.5mm}
+ .print-label .pcode{font-size:12pt;font-weight:800;color:#10243e}
+ .print-label .pdesc{font-size:6.5pt;line-height:1.15;min-height:7mm;color:#445468}
  .print-label svg{width:100%;height:auto}
- .print-label .pfooter{font-size:6pt}
+ .print-label .pfooter{font-size:6pt;border-top:1px dashed #b9c6d5;padding-top:1.5mm;margin-top:1mm;display:flex;justify-content:space-between}
 }
 
 
@@ -74,7 +70,7 @@
     padding:10px;
   }
   .company-logo{height:100px;margin-bottom:4px}
-  .brand{padding:2px 101px 27px; font-size: 33px;}
+  .brand{padding:2px 10px 12px;font-size:24px;text-align:center}
   .nav{display:grid;grid-template-columns:1fr 1fr;gap:4px}
   .nav button{margin:0;padding:10px 8px;font-size:12px}
   .main{
@@ -101,14 +97,57 @@
   .issue-actions .btn{width:100%}
 }
 
+/* Dashboard / archive enhancements */
+.dashboard-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:20px}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px}
+.dashboard-kpis .card,.kpi-grid .card{min-height:82px}
+.dashboard-card-title{font-size:13px;font-weight:700;color:#10243e;margin-bottom:12px}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px}
+.chart-card{background:#fff;border:1px solid #e2e8ef;border-radius:11px;padding:18px;box-shadow:0 2px 8px #1720330b;min-height:320px}
+.chart-wrap{height:245px;position:relative}
+.report-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.report-actions .btn{font-size:12px}
+.category-badge,.status-badge{display:inline-block;padding:5px 8px;border-radius:14px;font-size:11px;font-weight:700;white-space:nowrap}
+.cat-a{background:#fde7e7;color:#a51d1d}.cat-b{background:#fff2cf;color:#8a5a00}.cat-c{background:#e5f3e8;color:#267343}
+.status-105{background:#e8f5ec;color:#23753f}.status-103{background:#e8f1ff;color:#245b9e}.status-101{background:#fff2d9;color:#8a5a00}
+.status-reversed{background:#f0e9ff;color:#6941a5}.status-rejected{background:#fde7e7;color:#a51d1d}.status-other{background:#edf1f5;color:#586779}
+.archive-table{min-width:1420px}
+.material-code-link{cursor:pointer;color:#1769aa;text-decoration:underline;font-weight:700}
+ .barcode-modal-preview{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;background:#f7f9fb;border:1px solid #e2e8ef;border-radius:10px;margin-top:15px;font-size:11px;font-weight:700;color:#39485b}.barcode-modal-preview svg{width:100%;max-width:360px;height:auto}
+@media(max-width:900px){.dashboard-kpis{grid-template-columns:1fr 1fr}.chart-grid{grid-template-columns:1fr}.chart-card{min-height:290px}.chart-wrap{height:215px}}
+@media(max-width:600px){button,.btn,input,select,textarea{min-height:44px}.dashboard-kpis,.kpi-grid{grid-template-columns:1fr 1fr;gap:8px}.chart-card{padding:12px;min-height:270px}.chart-wrap{height:200px}.report-actions .btn{flex:1;min-width:140px}.archive-table{min-width:1420px}}
+
+
+/* Polished barcode label */
+.label-card{width:430px;max-width:100%;background:linear-gradient(145deg,#ffffff,#f7fafd);border:1px solid #cbd7e5;border-radius:14px;padding:0;overflow:hidden;box-shadow:0 10px 28px rgba(16,36,62,.12)}
+.label-top{background:#10243e;color:#fff;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.label-top .label-brand{color:#fff;font-size:10px;letter-spacing:1px}
+.label-type{font-size:9px;font-weight:700;padding:4px 7px;border:1px solid #ffffff55;border-radius:20px;white-space:nowrap}
+.label-body{padding:16px}
+.label-code{font-size:23px;letter-spacing:.5px;margin:0 0 5px}
+.label-desc{font-size:11px;min-height:28px;margin-bottom:13px}
+.barcode-frame{background:#fff;border:1px solid #dce4ec;border-radius:9px;padding:10px 8px 5px;text-align:center}
+.barcode-frame svg{width:100%;height:auto;max-height:90px}
+.label-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.label-meta-box{background:#eef3f8;border-radius:7px;padding:8px 9px}
+.label-meta-box small{display:block;color:#6b7889;font-size:8px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px}
+.label-meta-box strong{font-size:11px;color:#172033}
+.label-bottom{padding:9px 16px;border-top:1px dashed #cbd6e2;display:flex;justify-content:space-between;font-size:8px;color:#6b7889}
+.barcode-cell{min-width:190px;text-align:center}.archive-barcode{width:180px;height:54px;display:block;margin:auto}.barcode-code-text{font-size:9px;font-weight:700;color:#39485b;margin-top:2px}
+/* Dashboard visual refresh */
+.dashboard-hero{background:linear-gradient(135deg,#10243e 0%,#1769aa 100%);color:#fff;border-radius:16px;padding:22px 24px;margin-bottom:18px;box-shadow:0 10px 28px rgba(16,36,62,.16)}
+.dashboard-hero h1{font-size:26px;margin:0 0 5px}.dashboard-hero p{margin:0;color:#dbe9f7;font-size:13px}.hero-row{display:flex;justify-content:space-between;align-items:flex-end;gap:15px}.hero-chip{background:#ffffff18;border:1px solid #ffffff30;border-radius:10px;padding:9px 12px;font-size:11px;white-space:nowrap}
+.dashboard-kpis .card,.kpi-grid .card{position:relative;overflow:hidden;border:0;box-shadow:0 5px 18px rgba(16,36,62,.08);transition:transform .18s ease,box-shadow .18s ease}.dashboard-kpis .card:hover,.kpi-grid .card:hover{transform:translateY(-2px);box-shadow:0 9px 24px rgba(16,36,62,.12)}
+.dashboard-kpis .card:before,.kpi-grid .card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#1769aa}.dashboard-kpis .card:nth-child(2):before{background:#267343}.dashboard-kpis .card:nth-child(3):before{background:#8a5a00}
+.kpi-icon{font-size:18px;margin-bottom:8px;opacity:.85}.kpi-sub{font-size:10px;color:#8a95a5;margin-top:4px}.chart-card{box-shadow:0 6px 20px rgba(16,36,62,.07);border:1px solid #e1e8f0}.chart-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.chart-tag{font-size:9px;background:#eef4fa;color:#1769aa;border-radius:20px;padding:5px 8px;font-weight:700}.dashboard-section-title{font-size:14px;font-weight:800;color:#10243e;margin:20px 0 10px}
+@media(max-width:600px){.hero-row{align-items:flex-start;flex-direction:column}.dashboard-hero{padding:18px}.dashboard-hero h1{font-size:22px}.label-meta{grid-template-columns:1fr 1fr}.label-card{width:100%}.barcode-cell{min-width:170px}.archive-barcode{width:160px}}
+
 </style>
 </head>
 <body>
 <div class="app">
 <aside class="sidebar">
-    <img src="logo.jpg" class="company-logo" alt="Company Logo"
-     class="company-logo"
-     alt="Company Logo"> 
+    <img src="logo.jpg" class="company-logo" alt="Company Logo"> 
   <div class="brand">ScanMAT<span>Digital Warehouse Archive</span></div>
   <div class="nav">
     <button class="active" onclick="showPage('dashboard',this)">▦ Dashboard</button>
@@ -123,22 +162,48 @@
 
 <main class="main">
 <section id="dashboard" class="page active">
-  <div class="top"><div><h1>ScanMAT</h1><p></p></div><div class="user">ANKUR THAKURIA : 100880</div></div>
-  <div class="stats">
-    <div class="card"><div class="label">TOTAL MATERIAL RECORDS</div><div class="value" id="statTotal">0</div></div>
-    <div class="card"><div class="label">MATERIALS RECEIVED</div><div class="value" id="statReceived">0</div></div>
-    <div class="card"><div class="label">BIN LOCATIONS</div><div class="value" id="statBins">0</div></div>
-    <div class="card"><div class="label">WITH PHOTOGRAPHS</div><div class="value" id="statPhotos">0</div></div>
+  <div class="dashboard-hero">
+    <div class="hero-row">
+      <div><h1>Warehouse Dashboard</h1><p>Real-time overview of material stock, receipts and consumption.</p></div>
+      <div class="hero-chip">DIGITAL WAREHOUSE ARCHIVE</div>
+    </div>
   </div>
-  <div class="notice">Main workflow: <b>Receive → Photograph → Register → Assign Bin → Search → Retrieve</b>. The photograph is the primary visual identification record.</div>
+  <div class="dashboard-kpis">
+    <div class="card"><div class="kpi-icon">▦</div><div class="label">TOTAL SKU</div><div class="value" id="statTotal">0</div><div class="kpi-sub">Unique material records</div></div>
+    <div class="card"><div class="kpi-icon">▣</div><div class="label">TOTAL EA</div><div class="value" id="statTotalEA">0</div><div class="kpi-sub">Available stock in EA UOM</div></div>
+    <div class="card"><div class="kpi-icon">⌂</div><div class="label">TOTAL BIN</div><div class="value" id="statBins">0</div><div class="kpi-sub">Active storage locations</div></div>
+  </div>
+  <div class="kpi-grid">
+    <div class="card"><div class="label">MATERIAL RECEIVED TODAY</div><div class="value" id="statReceivedToday">0</div></div>
+    <div class="card"><div class="label">MATERIAL ISSUED TODAY</div><div class="value" id="statIssuedToday">0</div></div>
+    <div class="card"><div class="label">MATERIAL RECEIVED MTD</div><div class="value" id="statReceivedMTD">0</div></div>
+    <div class="card"><div class="label">MATERIAL ISSUED MTD</div><div class="value" id="statIssuedMTD">0</div></div>
+    <div class="card"><div class="label">MATERIAL RECEIVED YTD</div><div class="value" id="statReceivedYTD">0</div></div>
+    <div class="card"><div class="label">MATERIAL ISSUED YTD</div><div class="value" id="statIssuedYTD">0</div></div>
+  </div>
+  <div class="dashboard-section-title">Material Movement Analytics</div>
+  <div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-head"><div class="dashboard-card-title">Monthly Material Received</div><span class="chart-tag">LAST 12 MONTHS</span></div>
+      <div class="chart-wrap"><canvas id="receivedChart"></canvas></div>
+      <div class="report-actions"><button class="btn secondary" onclick="downloadReceivedReport()">↓ Received Detail</button><button class="btn secondary" onclick="downloadMonthlySummary()">↓ Monthly Summary</button></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-head"><div class="dashboard-card-title">Monthly Material Consumption / Issue</div><span class="chart-tag">LAST 12 MONTHS</span></div>
+      <div class="chart-wrap"><canvas id="issuedChart"></canvas></div>
+      <div class="report-actions"><button class="btn secondary" onclick="downloadConsumptionReport()">↓ Consumption Detail</button><button class="btn secondary" onclick="downloadMonthlySummary()">↓ Monthly Summary</button></div>
+    </div>
+  </div>
+  <div class="notice">Main workflow: <b>Receive → Photograph → Register → Assign Bin → Search → Retrieve</b>. Each material record retains its generated CODE128 barcode.</div>
   <div class="toolbar"><input class="search" id="dashSearch" placeholder="Search Material Code, Description, Bin Location..." oninput="renderRecent(this.value)"><button class="btn primary" onclick="showPage('register')">＋ Register Material</button></div>
-  <div class="panel"><table class="table"><thead><tr><th>PHOTO</th><th>MATERIAL CODE</th><th>DESCRIPTION</th><th>BIN</th><th>RECEIVED</th><th>STATUS</th></tr></thead><tbody id="recent"></tbody></table></div>
+  <div class="panel"><table class="table"><thead><tr><th>PHOTO</th><th>MATERIAL CODE</th><th>DESCRIPTION</th><th>BIN</th><th>RECEIVED</th><th>STATUS</th><th>CATEGORY</th></tr></thead><tbody id="recent"></tbody></table></div>
 </section>
 
 <section id="archive" class="page">
-  <div class="top"><div><h1>Material Archive</h1><p>Search and open the complete visual record of incoming materials.</p></div></div>
-  <div class="toolbar"><input class="search" id="archiveSearch" placeholder="Search by code, description, supplier, PO or bin..." oninput="renderArchive(this.value)"><button class="btn secondary" onclick="exportCSV()">Export CSV</button></div>
-  <div class="panel"><table class="table"><thead><tr><th>PHOTO</th><th>CODE</th><th>DESCRIPTION</th><th>BIN</th><th>SUPPLIER</th><th>RECEIVED</th><th></th></tr></thead><tbody id="archiveRows"></tbody></table></div>
+  <div class="top"><div><h1>Material Archive</h1><p>Search and open the complete material record including barcode, stock and movement details.</p></div></div>
+  <div class="toolbar"><input class="search" id="archiveSearch" placeholder="Search by code, description, supplier, PO/GRN, bin or status..." oninput="renderArchive(this.value)"><button class="btn secondary" onclick="exportCSV()">Export CSV</button></div>
+  <div class="notice" style="margin-top:-4px"><b>Category:</b> <span class="category-badge cat-a">A</span> <span class="category-badge cat-b">B</span> <span class="category-badge cat-c">C</span> &nbsp; <b>Status:</b> 105 / 103 / 101 / Reversed / Rejected are colour coded.</div>
+  <div class="panel" style="overflow-x:auto"><table class="table archive-table"><thead><tr><th>SL NO</th><th>ITEM CODE</th><th>DESCRIPTION</th><th>UOM</th><th>BIN</th><th>QTY</th><th>AVL</th><th>LAST GRN</th><th>LAST CONSUMPTION</th><th>STATUS</th><th>CATEGORY</th><th>BARCODE</th><th></th></tr></thead><tbody id="archiveRows"></tbody></table></div>
 </section>
 
 <section id="register" class="page">
@@ -152,7 +217,7 @@
   </div>
   <div id="registerScanner" class="scanner">
     <video playsinline></video>
-    <div class="scan-help">Point the camera at the QR Code or supported barcode. On Android, allow camera permission when prompted.</div>
+    <div class="scan-help">Point the camera at the CODE128 barcode. On Android, allow camera permission when prompted.</div>
     <button type="button" class="btn secondary" onclick="stopScanner()">Close Scanner</button>
   </div>
 </div>
@@ -162,6 +227,8 @@
       <div class="field"><label>PO / GRN Number</label><input name="grn" placeholder="PO / GRN reference"></div>
       <div class="field"><label>Quantity Received</label><input name="qty" type="number" min="0" value="1"></div>
       <div class="field"><label>Unit of Measure</label><select name="uom"><option>NOS</option><option>EA</option><option>SET</option><option>KG</option><option>M</option><option>LTR</option><option>BOX</option></select></div>
+      <div class="field"><label>Status</label><select name="status"><option value="GR 105">GR 105</option><option value="GR 103">GR 103</option><option value="GR 101">GR 101</option><option value="REVERSED">REVERSED</option><option value="REJECTED">REJECTED</option></select></div>
+      <div class="field"><label>Category of Item</label><select name="category"><option value="A">A</option><option value="B" selected>B</option><option value="C">C</option></select></div>
       <div class="field"><label>Received Date</label><input name="date" type="date"></div>
       <div class="field full"><label>Material Photograph *</label><div class="upload">
         <input id="photo" type="file" accept="image/*" required>
@@ -172,16 +239,21 @@
       <div class="field full"><button class="btn primary" type="submit">Save Digital Archive Record</button></div>
     </form>
   </div>
-  <div id="codebox" class="qrbar-panel" style="display:none">
-    <h3>Generated QR / Barcode Label</h3>
+  <div id="codebox" class="barcode-panel" style="display:none">
+    <h3>Generated Barcode Label</h3>
     <div class="label-preview">
       <div class="label-card">
-        <div class="label-brand">DIGITAL WAREHOUSE ARCHIVE</div>
-        <div id="labelCode" class="label-code"></div>
-        <div id="labelDesc" class="label-desc"></div>
-        <div class="barcode-wrap"><svg id="barcode"></svg></div>
-        <div id="qrcode" class="qr-wrap"></div>
-        <div class="label-footer"><span id="labelBin"></span><span>QR + CODE128</span></div>
+        <div class="label-top"><div class="label-brand">DIGITAL WAREHOUSE ARCHIVE</div><div class="label-type">CODE128</div></div>
+        <div class="label-body">
+          <div id="labelCode" class="label-code"></div>
+          <div id="labelDesc" class="label-desc"></div>
+          <div class="barcode-frame"><svg id="barcode"></svg></div>
+          <div class="label-meta">
+            <div class="label-meta-box"><small>Storage Bin</small><strong id="labelBin">-</strong></div>
+            <div class="label-meta-box"><small>Identification</small><strong>MATERIAL CODE</strong></div>
+          </div>
+        </div>
+        <div class="label-bottom"><span>SCAN WITH BARCODE READER</span><span>SCANMAT</span></div>
       </div>
     </div>
     <div class="issue-actions">
@@ -223,15 +295,21 @@
         <button type="button" class="btn secondary" onclick="downloadStandaloneBarcode()">Download SVG</button>
       </div>
     </div>
-    <div id="standaloneBarcodeResult" class="qrbar-panel" style="display:none">
+    <div id="standaloneBarcodeResult" class="barcode-panel" style="display:none">
       <h3>Warehouse Barcode Label</h3>
       <div class="label-preview">
         <div id="standaloneLabel" class="label-card">
-          <div class="label-brand">DIGITAL WAREHOUSE ARCHIVE</div>
-          <div id="standaloneLabelCode" class="label-code"></div>
-          <div id="standaloneLabelDesc" class="label-desc"></div>
-          <div class="barcode-wrap"><svg id="standaloneBarcode"></svg></div>
-          <div id="standaloneLabelBin" class="label-footer"></div>
+          <div class="label-top"><div class="label-brand">DIGITAL WAREHOUSE ARCHIVE</div><div class="label-type">CODE128</div></div>
+          <div class="label-body">
+            <div id="standaloneLabelCode" class="label-code"></div>
+            <div id="standaloneLabelDesc" class="label-desc"></div>
+            <div class="barcode-frame"><svg id="standaloneBarcode"></svg></div>
+            <div class="label-meta">
+              <div class="label-meta-box"><small>Storage Bin</small><strong id="standaloneLabelBin">-</strong></div>
+              <div class="label-meta-box"><small>Identification</small><strong>MATERIAL CODE</strong></div>
+            </div>
+          </div>
+          <div class="label-bottom"><span>SCAN WITH BARCODE READER</span><span>SCANMAT</span></div>
         </div>
       </div>
     </div>
@@ -250,7 +328,7 @@
       </div>
       <div id="issueScanner" class="scanner">
         <video playsinline></video>
-        <div class="scan-help">Scan the QR Code or supported barcode attached to the material.</div>
+        <div class="scan-help">Scan the CODE128 barcode attached to the material.</div>
         <button type="button" class="btn secondary" onclick="stopScanner()">Close Scanner</button>
       </div>
     </div>
@@ -301,6 +379,8 @@ let issues=JSON.parse(localStorage.getItem(ISSUE_KEY)||'[]');
 let activeStream=null;
 let scanTimer=null;
 let currentLabelRecord=null;
+let receivedChart=null;
+let issuedChart=null;
 
 
 function generateStandaloneBarcode(){
@@ -381,9 +461,9 @@ function downloadStandaloneBarcode(){
 function seed(){
  if(records.length) return;
  records=[
- {id:1,code:'E-MO-MO-15-C',desc:'CURRENT TRANSFORMER 11KV 300/5A',bin:'WH03-A-01-02',supplier:'ABC Electricals',grn:'GRN-260801',qty:2,uom:'EA',date:'2026-08-01',photo:'',remarks:'Visual inspection completed.'},
- {id:2,code:'M-VLVE-0782',desc:'ANTIFOAM AGENT P-CHEM-00005',bin:'CHEM-B-03-01',supplier:'XYZ Chemicals',grn:'GRN-260804',qty:20,uom:'LTR',date:'2026-08-04',photo:'',remarks:'Store under recommended conditions.'},
- {id:3,code:'P-CHEM-0008',desc:'CABLE GLAND M32 SS IP68',bin:'ELEC-C-02-06',supplier:'Industrial Supplies',grn:'GRN-260810',qty:50,uom:'EA',date:'2026-08-10',photo:'',remarks:''}
+ {id:1,code:'E-MO-MO-15-C',desc:'CURRENT TRANSFORMER 11KV 300/5A',bin:'WH03-A-01-02',supplier:'ABC Electricals',grn:'GRN-260801',qty:2,uom:'EA',date:'2026-08-01',photo:'',remarks:'Visual inspection completed.',status:'GR 105',category:'B'},
+ {id:2,code:'M-VLVE-0782',desc:'ANTIFOAM AGENT P-CHEM-00005',bin:'CHEM-B-03-01',supplier:'XYZ Chemicals',grn:'GRN-260804',qty:20,uom:'LTR',date:'2026-08-04',photo:'',remarks:'Store under recommended conditions.',status:'GR 105',category:'B'},
+ {id:3,code:'P-CHEM-0008',desc:'CABLE GLAND M32 SS IP68',bin:'ELEC-C-02-06',supplier:'Industrial Supplies',grn:'GRN-260810',qty:50,uom:'EA',date:'2026-08-10',photo:'',remarks:'',status:'GR 105',category:'B'}
  ];
  save();
 }
@@ -391,10 +471,9 @@ function seed(){
 function migrateRecords(){
  let changed=false;
  records.forEach(r=>{
-   if(typeof r.available!=='number'){
-     r.available=+r.qty||0;
-     changed=true;
-   }
+   if(typeof r.available!=='number'){r.available=+r.qty||0;changed=true;}
+   if(!r.status){r.status='GR 105';changed=true;}
+   if(!r.category || !['A','B','C'].includes(String(r.category).toUpperCase())){r.category='B';changed=true;}
  });
  if(changed)localStorage.setItem(KEY,JSON.stringify(records));
 }
@@ -414,11 +493,27 @@ function available(r){
  return Math.max(0, +(r.available!=null?r.available:r.qty)||0);
 }
 
+function localDateISO(d=new Date()){
+  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function monthKey(date){return String(date||'').slice(0,7);}
+function currentMonthKey(){return monthKey(localDateISO());}
+function currentYear(){return new Date().getFullYear();}
+function sumReceived(filterFn){return records.reduce((a,r)=>a+(filterFn(r)?(+r.qty||0):0),0);}
+function sumIssued(filterFn){return issues.reduce((a,x)=>a+(filterFn(x)?(+x.qty||0):0),0);}
 function updateStats(){
- document.getElementById('statTotal').textContent=records.length;
- document.getElementById('statReceived').textContent=records.reduce((a,r)=>a+(+r.qty||0),0);
- document.getElementById('statBins').textContent=new Set(records.map(r=>r.bin)).size;
- document.getElementById('statPhotos').textContent=records.filter(r=>r.photo).length;
+  const today=localDateISO(),mtd=currentMonthKey(),y=String(currentYear());
+  document.getElementById('statTotal').textContent=records.length;
+  document.getElementById('statTotalEA').textContent=records.reduce((a,r)=>a+available(r),0).toLocaleString();
+  document.getElementById('statBins').textContent=new Set(records.map(r=>r.bin).filter(Boolean)).size;
+  document.getElementById('statReceivedToday').textContent=sumReceived(r=>r.date===today).toLocaleString();
+  document.getElementById('statIssuedToday').textContent=sumIssued(x=>x.date===today).toLocaleString();
+  document.getElementById('statReceivedMTD').textContent=sumReceived(r=>monthKey(r.date)===mtd).toLocaleString();
+  document.getElementById('statIssuedMTD').textContent=sumIssued(x=>monthKey(x.date)===mtd).toLocaleString();
+  document.getElementById('statReceivedYTD').textContent=sumReceived(r=>String(r.date||'').startsWith(y)).toLocaleString();
+  document.getElementById('statIssuedYTD').textContent=sumIssued(x=>String(x.date||'').startsWith(y)).toLocaleString();
+  renderDashboardCharts();
 }
 
 function showPage(id,btn){
@@ -442,18 +537,43 @@ function match(r,q){
  return [r.code,r.desc,r.bin,r.supplier,r.grn].join(' ').toLowerCase().includes(q);
 }
 
+function statusClass(status){
+  const s=String(status||'').toUpperCase().replace(/\s+/g,'-');
+  if(s.includes('105'))return 'status-105';
+  if(s.includes('103'))return 'status-103';
+  if(s.includes('101'))return 'status-101';
+  if(s.includes('REVERSED'))return 'status-reversed';
+  if(s.includes('REJECTED'))return 'status-rejected';
+  return 'status-other';
+}
+function statusBadge(status){const s=status||'GR 105';return `<span class="status-badge ${statusClass(s)}">${escapeHtml(s)}</span>`;}
+function categoryBadge(category){const c=String(category||'B').toUpperCase();return `<span class="category-badge cat-${['A','B','C'].includes(c)?c.toLowerCase():'b'}">${escapeHtml(c)}</span>`;}
+function lastConsumption(code){
+  const arr=issues.filter(x=>String(x.code).toLowerCase()===String(code).toLowerCase()&&x.date).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  return arr[0]?arr[0].date:'-';
+}
 function renderRecent(q=''){
- const rows=records.filter(r=>match(r,q)).slice().reverse().slice(0,12);
- document.getElementById('recent').innerHTML=rows.length?
- rows.map(r=>`<tr><td>${img(r)}</td><td><b>${r.code}</b></td><td>${r.desc}</td><td>${r.bin}</td><td>${r.date||'-'}</td><td><span class="badge">Archived</span></td></tr>`).join(''):
- `<tr><td colspan="6" class="empty">No records found.</td></tr>`;
+  const rows=records.filter(r=>match(r,q)).slice().reverse().slice(0,12);
+  document.getElementById('recent').innerHTML=rows.length?
+  rows.map(r=>`<tr><td>${img(r)}</td><td><b class="material-code-link" onclick="openRecord(${r.id})">${escapeHtml(r.code)}</b></td><td>${escapeHtml(r.desc||'')}</td><td>${escapeHtml(r.bin||'-')}</td><td>${escapeHtml(r.date||'-')}</td><td>${statusBadge(r.status)}</td><td>${categoryBadge(r.category)}</td></tr>`).join(''):
+  `<tr><td colspan="7" class="empty">No records found.</td></tr>`;
 }
 
 function renderArchive(q=''){
- const rows=records.filter(r=>match(r,q)).slice().reverse();
- document.getElementById('archiveRows').innerHTML=rows.length?
- rows.map(r=>`<tr><td>${img(r)}</td><td><b>${r.code}</b></td><td>${r.desc}</td><td>${r.bin}</td><td>${r.supplier||'-'}</td><td>${r.date||'-'}</td><td><button class="btn secondary" onclick="openRecord(${r.id})">View</button></td></tr>`).join(''):
- `<tr><td colspan="7" class="empty">No material records found.</td></tr>`;
+  const rows=records.filter(r=>match(r,q)).slice().reverse();
+  document.getElementById('archiveRows').innerHTML=rows.length?
+  rows.map((r,i)=>`<tr><td>${rows.length-i}</td><td><b class="material-code-link" onclick="openRecord(${r.id})">${escapeHtml(r.code)}</b></td><td>${escapeHtml(r.desc||'')}</td><td>${escapeHtml(r.uom||'-')}</td><td>${escapeHtml(r.bin||'-')}</td><td>${r.qty||0}</td><td><b>${available(r)}</b></td><td>${escapeHtml(r.grn||'-')}</td><td>${escapeHtml(lastConsumption(r.code))}</td><td>${statusBadge(r.status)}</td><td>${categoryBadge(r.category)}</td><td class="barcode-cell"><svg class="archive-barcode" id="archive-barcode-${r.id}"></svg><div class="barcode-code-text">${escapeHtml(r.code||'')}</div></td><td><button class="btn secondary" onclick="openRecord(${r.id})">View</button></td></tr>`).join(''):
+  `<tr><td colspan="13" class="empty">No material records found.</td></tr>`;
+  requestAnimationFrame(()=>renderArchiveBarcodes(rows));
+}
+function renderArchiveBarcodes(rows){
+  if(!window.JsBarcode)return;
+  rows.forEach(r=>{
+    const el=document.getElementById('archive-barcode-'+r.id);
+    if(!el)return;
+    el.innerHTML='';
+    try{JsBarcode(el,String(r.code||''),{format:'CODE128',lineColor:'#10243e',background:'#ffffff',width:1.4,height:48,displayValue:false,margin:2});}catch(e){}
+  });
 }
 
 function renderBins(){
@@ -470,21 +590,28 @@ function renderBins(){
 }
 
 function openRecord(id){
- const r=records.find(x=>x.id===id);
- if(!r)return;
- document.getElementById('detail').innerHTML=
- `<div>${r.photo?`<img src="${r.photo}">`:`<div style="height:350px;display:grid;place-items:center;background:#f2f5f8;border-radius:9px;color:#8290a2">No photograph stored</div>`}</div>
- <div><h3>${r.desc}</h3>
- <div class="kv"><b>Material Code</b><span>${r.code}</span></div>
- <div class="kv"><b>Bin Location</b><span>${r.bin}</span></div>
- <div class="kv"><b>Supplier</b><span>${r.supplier||'-'}</span></div>
- <div class="kv"><b>PO / GRN</b><span>${r.grn||'-'}</span></div>
- <div class="kv"><b>Quantity</b><span>${r.qty||0} ${r.uom||''}</span></div>
- <div class="kv"><b>Available Quantity</b><span>${available(r)} ${r.uom||''}</span></div>
- <div class="kv"><b>Received Date</b><span>${r.date||'-'}</span></div>
- <div class="kv"><b>Remarks</b><span>${r.remarks||'-'}</span></div>
- <div style="margin-top:15px"><button class="btn danger" onclick="closeModal();prepareIssue('${escapeJs(r.code)}')">Issue Material</button></div></div>`;
- document.getElementById('modal').classList.add('show');
+  const r=records.find(x=>x.id===id);
+  if(!r)return;
+  document.getElementById('detail').innerHTML=
+  `<div>${r.photo?`<img src="${r.photo}">`:`<div style="height:350px;display:grid;place-items:center;background:#f2f5f8;border-radius:9px;color:#8290a2">No photograph stored</div>`}
+     <div class="barcode-modal-preview"><svg id="modalBarcode"></svg><div>${escapeHtml(r.code||'')}</div></div>
+   </div>
+   <div><h3>${escapeHtml(r.desc||'')}</h3>
+   <div class="kv"><b>Material Code</b><span>${escapeHtml(r.code)}</span></div>
+   <div class="kv"><b>UOM</b><span>${escapeHtml(r.uom||'-')}</span></div>
+   <div class="kv"><b>Bin Location</b><span>${escapeHtml(r.bin||'-')}</span></div>
+   <div class="kv"><b>Quantity</b><span>${r.qty||0}</span></div>
+   <div class="kv"><b>Available Quantity</b><span>${available(r)} ${escapeHtml(r.uom||'')}</span></div>
+   <div class="kv"><b>Last GRN</b><span>${escapeHtml(r.grn||'-')}</span></div>
+   <div class="kv"><b>Last Consumption</b><span>${escapeHtml(lastConsumption(r.code))}</span></div>
+   <div class="kv"><b>Status</b><span>${statusBadge(r.status)}</span></div>
+   <div class="kv"><b>Category</b><span>${categoryBadge(r.category)}</span></div>
+   <div class="kv"><b>Supplier</b><span>${escapeHtml(r.supplier||'-')}</span></div>
+   <div class="kv"><b>Received Date</b><span>${escapeHtml(r.date||'-')}</span></div>
+   <div class="kv"><b>Remarks</b><span>${escapeHtml(r.remarks||'-')}</span></div>
+   <div style="margin-top:15px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="downloadMaterialBarcode(${r.id})">Download Barcode</button><button class="btn danger" onclick="closeModal();prepareIssue('${escapeJs(r.code)}')">Issue Material</button></div></div>`;
+  document.getElementById('modal').classList.add('show');
+  if(window.JsBarcode){try{JsBarcode('#modalBarcode',String(r.code),{format:'CODE128',lineColor:'#10243e',background:'#fff',width:2,height:55,displayValue:true,fontSize:11,margin:5});}catch(e){}}
 }
 
 function closeModal(){document.getElementById('modal').classList.remove('show');}
@@ -530,6 +657,8 @@ document.getElementById('materialForm').addEventListener('submit',e=>{
      date:f.get('date'),
      photo:photo,
      remarks:f.get('remarks'),
+     status:f.get('status')||'GR 105',
+     category:f.get('category')||'B',
      available:qty
    };
    records.push(rec);
@@ -539,8 +668,8 @@ document.getElementById('materialForm').addEventListener('submit',e=>{
    document.getElementById('codebox').style.display='block';
    e.target.reset();
    document.getElementById('preview').style.display='none';
-   document.getElementById('issueDate').value=new Date().toISOString().slice(0,10);
-   alert('Material archive record saved and QR / barcode generated.');
+   document.getElementById('issueDate').value=localDateISO();
+   alert('Material archive record saved and barcode generated.');
  };
 
  if(file){
@@ -553,39 +682,16 @@ document.getElementById('materialForm').addEventListener('submit',e=>{
 });
 
 function generateLabel(r){
- if(!r)return;
- currentLabelRecord=r;
- document.getElementById('labelCode').textContent=r.code;
- document.getElementById('labelDesc').textContent=r.desc||'';
- document.getElementById('labelBin').textContent='BIN: '+(r.bin||'-');
-
- const qr=document.getElementById('qrcode');
- qr.innerHTML='';
- if(window.QRCode){
-   new QRCode(qr,{
-     text:String(r.code),
-     width:88,
-     height:88,
-     colorDark:'#10243e',
-     colorLight:'#ffffff',
-     correctLevel:QRCode.CorrectLevel.M
-   });
- }
-
- const svg=document.getElementById('barcode');
- svg.innerHTML='';
- if(window.JsBarcode){
-   JsBarcode(svg,String(r.code),{
-     format:'CODE128',
-     lineColor:'#10243e',
-     background:'#ffffff',
-     width:2,
-     height:42,
-     displayValue:true,
-     fontSize:11,
-     margin:4
-   });
- }
+  if(!r)return;
+  currentLabelRecord=r;
+  document.getElementById('labelCode').textContent=r.code;
+  document.getElementById('labelDesc').textContent=r.desc||'';
+  document.getElementById('labelBin').textContent=r.bin||'-';
+  const svg=document.getElementById('barcode');
+  svg.innerHTML='';
+  if(window.JsBarcode){
+    try{JsBarcode(svg,String(r.code),{format:'CODE128',lineColor:'#10243e',background:'#ffffff',width:2.2,height:62,displayValue:true,fontOptions:'bold',font:'Arial',fontSize:12,margin:7});}catch(e){alert('Unable to generate barcode for this Material Code.');}
+  }
 }
 
 function printCurrentLabel(){
@@ -597,7 +703,7 @@ function printCurrentLabel(){
    <div class="pcode">${escapeHtml(r.code)}</div>
    <div class="pdesc">${escapeHtml(r.desc||'')}</div>
    <svg id="printBarcode"></svg>
-   <div class="pfooter">BIN: ${escapeHtml(r.bin||'-')} <span>QR + CODE128</span></div>
+   <div class="pfooter">BIN: ${escapeHtml(r.bin||'-')} <span>CODE128</span></div>
  </div>`;
  if(window.JsBarcode){
    JsBarcode('#printBarcode',String(r.code),{
@@ -649,16 +755,16 @@ async function toggleScanner(id){
  }
 
  if(!('BarcodeDetector' in window)){
-   alert('This browser does not support native QR/barcode scanning. Chrome on Android is recommended, or enter the Material Code manually.');
+   alert('This browser does not support native barcode scanning. Chrome on Android is recommended, or enter the Material Code manually.');
    return;
  }
 
  try{
    const supported=await BarcodeDetector.getSupportedFormats();
-   const preferred=['qr_code','code_128','code_39','ean_13','ean_8','upc_a','upc_e'];
+   const preferred=['code_128','code_39','ean_13','ean_8','upc_a','upc_e'];
    const formats=preferred.filter(x=>supported.includes(x));
    if(!formats.length){
-     alert('No supported QR/barcode format is available in this browser.');
+     alert('No supported barcode format is available in this browser.');
      return;
    }
 
@@ -806,6 +912,44 @@ function renderIssues(q=''){
  `<tr><td colspan="7" class="empty">No issue transactions found.</td></tr>`;
 }
 
+function getLast12Months(){
+  const now=new Date(),arr=[];
+  for(let i=11;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);arr.push({key:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`,label:d.toLocaleString('en-IN',{month:'short',year:'numeric'})});}
+  return arr;
+}
+function renderDashboardCharts(){
+  if(!window.Chart||!document.getElementById('receivedChart'))return;
+  const months=getLast12Months();
+  const received=months.map(m=>records.reduce((a,r)=>a+(monthKey(r.date)===m.key?(+r.qty||0):0),0));
+  const issued=months.map(m=>issues.reduce((a,x)=>a+(monthKey(x.date)===m.key?(+x.qty||0):0),0));
+  const labels=months.map(m=>m.label);
+  if(receivedChart)receivedChart.destroy();if(issuedChart)issuedChart.destroy();
+  receivedChart=new Chart(document.getElementById('receivedChart'),{type:'bar',data:{labels,datasets:[{label:'Received Quantity',data:received,borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:45,minRotation:0}},y:{beginAtZero:true,grid:{color:'#edf1f5'}}}}});
+  issuedChart=new Chart(document.getElementById('issuedChart'),{type:'bar',data:{labels,datasets:[{label:'Issued / Consumption Quantity',data:issued,borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:45,minRotation:0}},y:{beginAtZero:true,grid:{color:'#edf1f5'}}}}});
+}
+function downloadReceivedReport(){
+  let csv='Material Code,Description,UOM,Quantity Received,GRN,Received Date,Bin,Supplier,Status,Category\n';
+  records.forEach(r=>csv+=`"${csvSafe(r.code)}","${csvSafe(r.desc)}","${csvSafe(r.uom)}","${r.qty||0}","${csvSafe(r.grn||'')}","${csvSafe(r.date||'')}","${csvSafe(r.bin||'')}","${csvSafe(r.supplier||'')}","${csvSafe(r.status||'')}","${csvSafe(r.category||'')}"\n`);
+  downloadText(csv,'material_received_detail_report.csv','text/csv');
+}
+function downloadConsumptionReport(){
+  let csv='Issue Date,Material Code,Description,UOM,Issued Quantity,Issued To,Reference,Bin,Balance,Remarks\n';
+  issues.forEach(x=>csv+=`"${csvSafe(x.date)}","${csvSafe(x.code)}","${csvSafe(x.desc)}","${csvSafe(x.uom)}","${x.qty||0}","${csvSafe(x.to)}","${csvSafe(x.ref||'')}","${csvSafe(x.bin||'')}","${x.balance||0}","${csvSafe(x.remarks||'')}"\n`);
+  downloadText(csv,'material_consumption_detail_report.csv','text/csv');
+}
+function downloadMonthlySummary(){
+  const months=getLast12Months();let csv='Month,Material Received,Material Issued / Consumption\n';
+  months.forEach(m=>{const rec=records.reduce((a,r)=>a+(monthKey(r.date)===m.key?(+r.qty||0):0),0);const iss=issues.reduce((a,x)=>a+(monthKey(x.date)===m.key?(+x.qty||0):0),0);csv+=`"${m.label}","${rec}","${iss}"\n`;});
+  downloadText(csv,'monthly_material_movement_summary.csv','text/csv');
+}
+function downloadMaterialBarcode(id){
+  const r=records.find(x=>x.id===id);if(!r||!window.JsBarcode)return;
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  try{JsBarcode(svg,String(r.code),{format:'CODE128',lineColor:'#10243e',background:'#ffffff',width:2.5,height:80,displayValue:true,fontOptions:'bold',fontSize:14,margin:10});}catch(e){alert('Unable to generate barcode.');return;}
+  const source='<?xml version="1.0" encoding="UTF-8"?>\n'+svg.outerHTML;
+  const blob=new Blob([source],{type:'image/svg+xml;charset=utf-8'});const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`${r.code}_CODE128.svg`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
 function exportCSV(){
  let csv='Material Code,Description,Bin Location,Supplier,PO/GRN,Quantity,UOM,Received Date,Remarks\n';
  records.forEach(r=>{
@@ -837,7 +981,7 @@ function downloadText(text,name,type){
  setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 
-document.getElementById('issueDate').value=new Date().toISOString().slice(0,10);
+document.getElementById('issueDate').value=localDateISO();
 
 seed();
 migrateRecords();
