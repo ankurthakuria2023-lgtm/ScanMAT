@@ -111,11 +111,11 @@
 .cat-a{background:#fde7e7;color:#a51d1d}.cat-b{background:#fff2cf;color:#8a5a00}.cat-c{background:#e5f3e8;color:#267343}
 .status-105{background:#e8f5ec;color:#23753f}.status-103{background:#e8f1ff;color:#245b9e}.status-101{background:#fff2d9;color:#8a5a00}
 .status-reversed{background:#f0e9ff;color:#6941a5}.status-rejected{background:#fde7e7;color:#a51d1d}.status-other{background:#edf1f5;color:#586779}
-.archive-table{min-width:1420px}
+.archive-table{min-width:1480px}
 .material-code-link{cursor:pointer;color:#1769aa;text-decoration:underline;font-weight:700}
  .barcode-modal-preview{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;background:#f7f9fb;border:1px solid #e2e8ef;border-radius:10px;margin-top:15px;font-size:11px;font-weight:700;color:#39485b}.barcode-modal-preview svg{width:100%;max-width:360px;height:auto}
 @media(max-width:900px){.dashboard-kpis{grid-template-columns:1fr 1fr}.chart-grid{grid-template-columns:1fr}.chart-card{min-height:290px}.chart-wrap{height:215px}}
-@media(max-width:600px){button,.btn,input,select,textarea{min-height:44px}.dashboard-kpis,.kpi-grid{grid-template-columns:1fr 1fr;gap:8px}.chart-card{padding:12px;min-height:270px}.chart-wrap{height:200px}.report-actions .btn{flex:1;min-width:140px}.archive-table{min-width:1420px}}
+@media(max-width:600px){button,.btn,input,select,textarea{min-height:44px}.dashboard-kpis,.kpi-grid{grid-template-columns:1fr 1fr;gap:8px}.chart-card{padding:12px;min-height:270px}.chart-wrap{height:200px}.report-actions .btn{flex:1;min-width:140px}.archive-table{min-width:1480px}}
 
 
 /* Polished barcode label */
@@ -134,6 +134,11 @@
 .label-meta-box strong{font-size:11px;color:#172033}
 .label-bottom{padding:9px 16px;border-top:1px dashed #cbd6e2;display:flex;justify-content:space-between;font-size:8px;color:#6b7889}
 .barcode-cell{min-width:190px;text-align:center}.archive-barcode{width:180px;height:54px;display:block;margin:auto}.barcode-code-text{font-size:9px;font-weight:700;color:#39485b;margin-top:2px}
+.archive-photo{width:58px;height:48px;object-fit:cover;border-radius:7px;border:1px solid #d7e0ea;background:#f1f5f8;display:block}
+.archive-photo-empty{width:58px;height:48px;border-radius:7px;border:1px solid #d7e0ea;background:#f1f5f8;display:grid;place-items:center;color:#9aa6b5;font-size:18px}
+.delete-btn{background:#fff1f1;border:1px solid #f0c7c7;color:#b42318}
+.delete-btn:hover{background:#ffe3e3}
+
 /* Dashboard visual refresh */
 .dashboard-hero{background:linear-gradient(135deg,#10243e 0%,#1769aa 100%);color:#fff;border-radius:16px;padding:22px 24px;margin-bottom:18px;box-shadow:0 10px 28px rgba(16,36,62,.16)}
 .dashboard-hero h1{font-size:26px;margin:0 0 5px}.dashboard-hero p{margin:0;color:#dbe9f7;font-size:13px}.hero-row{display:flex;justify-content:space-between;align-items:flex-end;gap:15px}.hero-chip{background:#ffffff18;border:1px solid #ffffff30;border-radius:10px;padding:9px 12px;font-size:11px;white-space:nowrap}
@@ -184,12 +189,12 @@
   <div class="dashboard-section-title">Material Movement Analytics</div>
   <div class="chart-grid">
     <div class="chart-card">
-      <div class="chart-head"><div class="dashboard-card-title">Monthly Material Received</div><span class="chart-tag">LAST 12 MONTHS</span></div>
+      <div class="chart-head"><div class="dashboard-card-title">Monthly Material Codes Received</div><span class="chart-tag">LAST 12 MONTHS</span></div>
       <div class="chart-wrap"><canvas id="receivedChart"></canvas></div>
       <div class="report-actions"><button class="btn secondary" onclick="downloadReceivedReport()">↓ Received Detail</button><button class="btn secondary" onclick="downloadMonthlySummary()">↓ Monthly Summary</button></div>
     </div>
     <div class="chart-card">
-      <div class="chart-head"><div class="dashboard-card-title">Monthly Material Consumption / Issue</div><span class="chart-tag">LAST 12 MONTHS</span></div>
+      <div class="chart-head"><div class="dashboard-card-title">Monthly Material Codes Consumed / Issued</div><span class="chart-tag">LAST 12 MONTHS</span></div>
       <div class="chart-wrap"><canvas id="issuedChart"></canvas></div>
       <div class="report-actions"><button class="btn secondary" onclick="downloadConsumptionReport()">↓ Consumption Detail</button><button class="btn secondary" onclick="downloadMonthlySummary()">↓ Monthly Summary</button></div>
     </div>
@@ -203,7 +208,7 @@
   <div class="top"><div><h1>Material Archive</h1><p>Search and open the complete material record including barcode, stock and movement details.</p></div></div>
   <div class="toolbar"><input class="search" id="archiveSearch" placeholder="Search by code, description, supplier, PO/GRN, bin or status..." oninput="renderArchive(this.value)"><button class="btn secondary" onclick="exportCSV()">Export CSV</button></div>
   <div class="notice" style="margin-top:-4px"><b>Category:</b> <span class="category-badge cat-a">A</span> <span class="category-badge cat-b">B</span> <span class="category-badge cat-c">C</span> &nbsp; <b>Status:</b> 105 / 103 / 101 / Reversed / Rejected are colour coded.</div>
-  <div class="panel" style="overflow-x:auto"><table class="table archive-table"><thead><tr><th>SL NO</th><th>ITEM CODE</th><th>DESCRIPTION</th><th>UOM</th><th>BIN</th><th>QTY</th><th>AVL</th><th>LAST GRN</th><th>LAST CONSUMPTION</th><th>STATUS</th><th>CATEGORY</th><th>BARCODE</th><th></th></tr></thead><tbody id="archiveRows"></tbody></table></div>
+  <div class="panel" style="overflow-x:auto"><table class="table archive-table"><thead><tr><th>PHOTO</th><th>ITEM CODE</th><th>DESCRIPTION</th><th>UOM</th><th>BIN</th><th>QTY</th><th>AVL</th><th>LAST GRN</th><th>LAST CONSUMPTION</th><th>STATUS</th><th>CATEGORY</th><th>BARCODE</th><th>ACTION</th></tr></thead><tbody id="archiveRows"></tbody></table></div>
 </section>
 
 <section id="register" class="page">
@@ -500,19 +505,20 @@ function localDateISO(d=new Date()){
 function monthKey(date){return String(date||'').slice(0,7);}
 function currentMonthKey(){return monthKey(localDateISO());}
 function currentYear(){return new Date().getFullYear();}
-function sumReceived(filterFn){return records.reduce((a,r)=>a+(filterFn(r)?(+r.qty||0):0),0);}
-function sumIssued(filterFn){return issues.reduce((a,x)=>a+(filterFn(x)?(+x.qty||0):0),0);}
+function uniqueCodeCount(items, filterFn){
+  return new Set(items.filter(filterFn).map(x=>String(x.code||'').trim().toLowerCase()).filter(Boolean)).size;
+}
 function updateStats(){
   const today=localDateISO(),mtd=currentMonthKey(),y=String(currentYear());
   document.getElementById('statTotal').textContent=records.length;
-  document.getElementById('statTotalEA').textContent=records.reduce((a,r)=>a+available(r),0).toLocaleString();
+  document.getElementById('statTotalEA').textContent=records.reduce((a,r)=>a+(r.uom==='EA'?available(r):0),0).toLocaleString();
   document.getElementById('statBins').textContent=new Set(records.map(r=>r.bin).filter(Boolean)).size;
-  document.getElementById('statReceivedToday').textContent=sumReceived(r=>r.date===today).toLocaleString();
-  document.getElementById('statIssuedToday').textContent=sumIssued(x=>x.date===today).toLocaleString();
-  document.getElementById('statReceivedMTD').textContent=sumReceived(r=>monthKey(r.date)===mtd).toLocaleString();
-  document.getElementById('statIssuedMTD').textContent=sumIssued(x=>monthKey(x.date)===mtd).toLocaleString();
-  document.getElementById('statReceivedYTD').textContent=sumReceived(r=>String(r.date||'').startsWith(y)).toLocaleString();
-  document.getElementById('statIssuedYTD').textContent=sumIssued(x=>String(x.date||'').startsWith(y)).toLocaleString();
+  document.getElementById('statReceivedToday').textContent=uniqueCodeCount(records,r=>r.date===today).toLocaleString();
+  document.getElementById('statIssuedToday').textContent=uniqueCodeCount(issues,x=>x.date===today).toLocaleString();
+  document.getElementById('statReceivedMTD').textContent=uniqueCodeCount(records,r=>monthKey(r.date)===mtd).toLocaleString();
+  document.getElementById('statIssuedMTD').textContent=uniqueCodeCount(issues,x=>monthKey(x.date)===mtd).toLocaleString();
+  document.getElementById('statReceivedYTD').textContent=uniqueCodeCount(records,r=>String(r.date||'').startsWith(y)).toLocaleString();
+  document.getElementById('statIssuedYTD').textContent=uniqueCodeCount(issues,x=>String(x.date||'').startsWith(y)).toLocaleString();
   renderDashboardCharts();
 }
 
@@ -562,7 +568,21 @@ function renderRecent(q=''){
 function renderArchive(q=''){
   const rows=records.filter(r=>match(r,q)).slice().reverse();
   document.getElementById('archiveRows').innerHTML=rows.length?
-  rows.map((r,i)=>`<tr><td>${rows.length-i}</td><td><b class="material-code-link" onclick="openRecord(${r.id})">${escapeHtml(r.code)}</b></td><td>${escapeHtml(r.desc||'')}</td><td>${escapeHtml(r.uom||'-')}</td><td>${escapeHtml(r.bin||'-')}</td><td>${r.qty||0}</td><td><b>${available(r)}</b></td><td>${escapeHtml(r.grn||'-')}</td><td>${escapeHtml(lastConsumption(r.code))}</td><td>${statusBadge(r.status)}</td><td>${categoryBadge(r.category)}</td><td class="barcode-cell"><svg class="archive-barcode" id="archive-barcode-${r.id}"></svg><div class="barcode-code-text">${escapeHtml(r.code||'')}</div></td><td><button class="btn secondary" onclick="openRecord(${r.id})">View</button></td></tr>`).join(''):
+  rows.map(r=>`<tr>
+    <td>${r.photo?`<img class="archive-photo" src="${r.photo}" alt="Material">`:`<div class="archive-photo-empty">▧</div>`}</td>
+    <td><b class="material-code-link" onclick="openRecord(${r.id})">${escapeHtml(r.code)}</b></td>
+    <td>${escapeHtml(r.desc||'')}</td>
+    <td>${escapeHtml(r.uom||'-')}</td>
+    <td>${escapeHtml(r.bin||'-')}</td>
+    <td>${r.qty||0}</td>
+    <td><b>${available(r)}</b></td>
+    <td>${escapeHtml(r.grn||'-')}</td>
+    <td>${escapeHtml(lastConsumption(r.code))}</td>
+    <td>${statusBadge(r.status)}</td>
+    <td>${categoryBadge(r.category)}</td>
+    <td class="barcode-cell"><svg class="archive-barcode" id="archive-barcode-${r.id}"></svg><div class="barcode-code-text">${escapeHtml(r.code||'')}</div></td>
+    <td><div class="issue-actions" style="margin-top:0;flex-wrap:nowrap"><button class="btn secondary" onclick="openRecord(${r.id})">View</button><button class="btn delete-btn" onclick="deleteMaterial(${r.id})">Delete</button></div></td>
+  </tr>`).join(''):
   `<tr><td colspan="13" class="empty">No material records found.</td></tr>`;
   requestAnimationFrame(()=>renderArchiveBarcodes(rows));
 }
@@ -574,6 +594,19 @@ function renderArchiveBarcodes(rows){
     el.innerHTML='';
     try{JsBarcode(el,String(r.code||''),{format:'CODE128',lineColor:'#10243e',background:'#ffffff',width:1.4,height:48,displayValue:false,margin:2});}catch(e){}
   });
+}
+
+
+function deleteMaterial(id){
+  const r=records.find(x=>x.id===id);
+  if(!r)return;
+  const confirmed=confirm(`Delete material "${r.code}" from the archive?\n\nThe material record will be removed from the archive. Existing issue transaction history will be retained.`);
+  if(!confirmed)return;
+  records=records.filter(x=>x.id!==id);
+  if(currentLabelRecord && currentLabelRecord.id===id)currentLabelRecord=null;
+  save();
+  closeModal();
+  alert(`Material ${r.code} has been deleted from the archive.`);
 }
 
 function renderBins(){
@@ -920,12 +953,24 @@ function getLast12Months(){
 function renderDashboardCharts(){
   if(!window.Chart||!document.getElementById('receivedChart'))return;
   const months=getLast12Months();
-  const received=months.map(m=>records.reduce((a,r)=>a+(monthKey(r.date)===m.key?(+r.qty||0):0),0));
-  const issued=months.map(m=>issues.reduce((a,x)=>a+(monthKey(x.date)===m.key?(+x.qty||0):0),0));
+  const received=months.map(m=>uniqueCodeCount(records,r=>monthKey(r.date)===m.key));
+  const issued=months.map(m=>uniqueCodeCount(issues,x=>monthKey(x.date)===m.key));
   const labels=months.map(m=>m.label);
-  if(receivedChart)receivedChart.destroy();if(issuedChart)issuedChart.destroy();
-  receivedChart=new Chart(document.getElementById('receivedChart'),{type:'bar',data:{labels,datasets:[{label:'Received Quantity',data:received,borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:45,minRotation:0}},y:{beginAtZero:true,grid:{color:'#edf1f5'}}}}});
-  issuedChart=new Chart(document.getElementById('issuedChart'),{type:'bar',data:{labels,datasets:[{label:'Issued / Consumption Quantity',data:issued,borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:45,minRotation:0}},y:{beginAtZero:true,grid:{color:'#edf1f5'}}}}});
+  const receivedColors=['#1769aa','#267343','#7c3aed','#d97706','#0891b2','#dc2626','#2563eb','#16a34a','#9333ea','#ea580c','#0f766e','#be123c'];
+  const issuedColors=['#9333ea','#dc2626','#d97706','#2563eb','#16a34a','#0891b2','#be123c','#7c3aed','#ea580c','#1769aa','#267343','#c2410c'];
+  if(receivedChart)receivedChart.destroy();
+  if(issuedChart)issuedChart.destroy();
+  const commonOptions={responsive:true,maintainAspectRatio:false,borderRadius:7,borderSkipped:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:(ctx)=>` ${ctx.dataset.label}: ${ctx.raw} material code${ctx.raw===1?'':'s'}`}}},scales:{x:{grid:{display:false},ticks:{maxRotation:45,minRotation:0}},y:{beginAtZero:true,precision:0,grid:{color:'#edf1f5'},ticks:{stepSize:1}}}};
+  receivedChart=new Chart(document.getElementById('receivedChart'),{
+    type:'bar',
+    data:{labels,datasets:[{label:'Material Codes Received',data:received,backgroundColor:receivedColors,borderColor:receivedColors,borderWidth:1}]},
+    options:commonOptions
+  });
+  issuedChart=new Chart(document.getElementById('issuedChart'),{
+    type:'bar',
+    data:{labels,datasets:[{label:'Material Codes Consumed / Issued',data:issued,backgroundColor:issuedColors,borderColor:issuedColors,borderWidth:1}]},
+    options:commonOptions
+  });
 }
 function downloadReceivedReport(){
   let csv='Material Code,Description,UOM,Quantity Received,GRN,Received Date,Bin,Supplier,Status,Category\n';
@@ -938,8 +983,8 @@ function downloadConsumptionReport(){
   downloadText(csv,'material_consumption_detail_report.csv','text/csv');
 }
 function downloadMonthlySummary(){
-  const months=getLast12Months();let csv='Month,Material Received,Material Issued / Consumption\n';
-  months.forEach(m=>{const rec=records.reduce((a,r)=>a+(monthKey(r.date)===m.key?(+r.qty||0):0),0);const iss=issues.reduce((a,x)=>a+(monthKey(x.date)===m.key?(+x.qty||0):0),0);csv+=`"${m.label}","${rec}","${iss}"\n`;});
+  const months=getLast12Months();let csv='Month,Material Codes Received,Material Codes Issued / Consumed\n';
+  months.forEach(m=>{const rec=uniqueCodeCount(records,r=>monthKey(r.date)===m.key);const iss=uniqueCodeCount(issues,x=>monthKey(x.date)===m.key);csv+=`"${m.label}","${rec}","${iss}"\n`;});
   downloadText(csv,'monthly_material_movement_summary.csv','text/csv');
 }
 function downloadMaterialBarcode(id){
