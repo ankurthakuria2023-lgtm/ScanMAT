@@ -48,18 +48,21 @@
  .label-card{width:100%}
 }
 @media print{
- body{background:#fff}
+ @page{margin:0}
+ html,body{margin:0;padding:0;background:#fff}
  body *{visibility:hidden!important}
  #printLabel,#printLabel *{visibility:visible!important}
- #printLabel{position:absolute;left:0;top:0}
- .print-label{width:60mm;min-height:38mm;border:1px solid #9aa8b8;border-radius:2mm;padding:3mm;font-family:Arial,sans-serif;background:#fff}
- .print-label .pbrand{font-size:7pt;font-weight:700;color:#10243e;letter-spacing:.4px;border-bottom:1px solid #d9e1e9;padding-bottom:1.5mm;margin-bottom:1.5mm}
- .print-label .pcode{font-size:12pt;font-weight:800;color:#10243e}
- .print-label .pdesc{font-size:6.5pt;line-height:1.15;min-height:7mm;color:#445468}
- .print-label svg{width:100%;height:auto}
- .print-label .pfooter{font-size:6pt;border-top:1px dashed #b9c6d5;padding-top:1.5mm;margin-top:1mm;display:flex;justify-content:space-between}
+ #printLabel{position:absolute;left:0;top:0;margin:0;padding:0}
+ .print-label{width:430px!important;max-width:none!important;min-height:0!important;background:linear-gradient(145deg,#ffffff,#f7fafd)!important;border:1px solid #cbd7e5!important;border-radius:14px!important;padding:0!important;overflow:hidden!important;box-shadow:0 10px 28px rgba(16,36,62,.12)!important;font-family:Inter,Segoe UI,Arial,sans-serif!important;color:#172033!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+ .print-label .label-top{background:#10243e!important;color:#fff!important;padding:13px 16px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important}
+ .print-label .label-top .label-brand{color:#fff!important;font-size:10px!important;letter-spacing:1px!important}
+ .print-label .label-type{font-size:9px!important;font-weight:700!important;padding:4px 7px!important;border:1px solid #ffffff55!important;border-radius:20px!important;white-space:nowrap!important}
+ .print-label .label-body{padding:16px!important}.print-label .label-code{font-size:23px!important;letter-spacing:.5px!important;margin:0 0 5px!important}.print-label .label-desc{font-size:11px!important;min-height:28px!important;margin-bottom:13px!important}
+ .print-label .barcode-frame{background:#fff!important;border:1px solid #dce4ec!important;border-radius:9px!important;padding:10px 8px 5px!important;text-align:center!important}.print-label .barcode-frame svg{width:100%!important;height:auto!important;max-height:90px!important}
+ .print-label .label-meta{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-top:12px!important}.print-label .label-meta-box{background:#eef3f8!important;border-radius:7px!important;padding:8px 9px!important}
+ .print-label .label-meta-box small{display:block!important;color:#6b7889!important;font-size:8px!important;text-transform:uppercase!important;letter-spacing:.6px!important;margin-bottom:3px!important}.print-label .label-meta-box strong{font-size:11px!important;color:#172033!important}
+ .print-label .label-bottom{padding:9px 16px!important;border-top:1px dashed #cbd6e2!important;display:flex!important;justify-content:space-between!important;font-size:8px!important;color:#6b7889!important}
 }
-
 
 /* Flask/mobile layout enhancements */
 @media (max-width: 600px){
@@ -435,19 +438,23 @@ function generateFromMaterialCode(){
 }
 
 function printStandaloneBarcode(){
-  if(document.getElementById('standaloneBarcodeResult').style.display==='none'){
-    if(!generateStandaloneBarcode()) return;
-  }
-  const code=document.getElementById('generatorCode').value.trim();
-  const desc=document.getElementById('generatorDesc').value.trim();
-  const bin=document.getElementById('generatorBin').value.trim();
-  const svg=document.getElementById('standaloneBarcode').outerHTML;
-  const w=window.open('', '_blank', 'width=500,height=400');
-  if(!w){alert('Please allow pop-ups to print the label.');return;}
-  w.document.write(`<!doctype html><html><head><title>Barcode Label - ${escapeHtml(code)}</title><style>
-    @page{margin:4mm}body{margin:0;font-family:Arial,sans-serif;background:#fff}.label{width:50mm;min-height:30mm;border:1px solid #111;padding:3mm;box-sizing:border-box}.brand{font-size:7pt;font-weight:700;color:#10243e;letter-spacing:.3px}.code{font-size:11pt;font-weight:800;margin:1mm 0;color:#10243e}.desc{font-size:6.5pt;line-height:1.1;min-height:7mm}.barcode{width:100%;height:auto}.footer{font-size:6pt;display:flex;justify-content:space-between;margin-top:1mm;color:#333}
-  </style></head><body><div class="label"><div class="brand">DIGITAL WAREHOUSE ARCHIVE</div><div class="code">${escapeHtml(code)}</div><div class="desc">${escapeHtml(desc)}</div><div class="barcode">${svg}</div><div class="footer"><span>BIN: ${escapeHtml(bin||'-')}</span><span>CODE128</span></div></div><script>window.onload=function(){window.print();}<\/script></body></html>`);
-  w.document.close();
+ if(document.getElementById('standaloneBarcodeResult').style.display==='none'){
+   if(!generateStandaloneBarcode()) return;
+ }
+ const code=document.getElementById('generatorCode').value.trim();
+ const desc=document.getElementById('generatorDesc').value.trim();
+ const bin=document.getElementById('generatorBin').value.trim();
+ const svg=document.getElementById('standaloneBarcode').outerHTML;
+ const w=window.open('', '_blank', 'width=500,height=500');
+ if(!w){alert('Please allow pop-ups to print the label.');return;}
+ w.document.write(`<!doctype html><html><head><title>Barcode Label - ${escapeHtml(code)}</title><style>
+   @page{margin:0}html,body{margin:0;padding:0;background:#fff}
+   .label-card{width:430px;max-width:none;background:linear-gradient(145deg,#ffffff,#f7fafd);border:1px solid #cbd7e5;border-radius:14px;padding:0;overflow:hidden;box-shadow:0 10px 28px rgba(16,36,62,.12);font-family:Inter,Segoe UI,Arial,sans-serif;color:#172033;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+   .label-top{background:#10243e;color:#fff;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}.label-top .label-brand{color:#fff;font-size:10px;letter-spacing:1px}.label-type{font-size:9px;font-weight:700;padding:4px 7px;border:1px solid #ffffff55;border-radius:20px;white-space:nowrap}
+   .label-body{padding:16px}.label-code{font-size:23px;letter-spacing:.5px;margin:0 0 5px}.label-desc{font-size:11px;min-height:28px;margin-bottom:13px}.barcode-frame{background:#fff;border:1px solid #dce4ec;border-radius:9px;padding:10px 8px 5px;text-align:center}.barcode-frame svg{width:100%;height:auto;max-height:90px}
+   .label-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.label-meta-box{background:#eef3f8;border-radius:7px;padding:8px 9px}.label-meta-box small{display:block;color:#6b7889;font-size:8px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px}.label-meta-box strong{font-size:11px;color:#172033}.label-bottom{padding:9px 16px;border-top:1px dashed #cbd6e2;display:flex;justify-content:space-between;font-size:8px;color:#6b7889}
+ </style></head><body><div class="label-card"><div class="label-top"><div class="label-brand">DIGITAL WAREHOUSE ARCHIVE</div><div class="label-type">CODE128</div></div><div class="label-body"><div class="label-code">${escapeHtml(code)}</div><div class="label-desc">${escapeHtml(desc)}</div><div class="barcode-frame">${svg}</div><div class="label-meta"><div class="label-meta-box"><small>Storage Bin</small><strong>BIN: ${escapeHtml(bin||'-')}</strong></div><div class="label-meta-box"><small>Identification</small><strong>MATERIAL CODE</strong></div></div></div><div class="label-bottom"><span>SCAN WITH BARCODE READER</span><span>SCANMAT</span></div></div><script>window.onload=function(){window.print();}<\/script></body></html>`);
+ w.document.close();
 }
 
 function downloadStandaloneBarcode(){
@@ -731,24 +738,21 @@ function printCurrentLabel(){
  if(!currentLabelRecord){alert('Register a material first.');return;}
  const r=currentLabelRecord;
  document.getElementById('printLabel').innerHTML=
- `<div class="print-label">
-   <div class="pbrand">DIGITAL WAREHOUSE ARCHIVE</div>
-   <div class="pcode">${escapeHtml(r.code)}</div>
-   <div class="pdesc">${escapeHtml(r.desc||'')}</div>
-   <svg id="printBarcode"></svg>
-   <div class="pfooter">BIN: ${escapeHtml(r.bin||'-')} <span>CODE128</span></div>
+ `<div class="print-label label-card">
+   <div class="label-top"><div class="label-brand">DIGITAL WAREHOUSE ARCHIVE</div><div class="label-type">CODE128</div></div>
+   <div class="label-body">
+     <div class="label-code">${escapeHtml(r.code)}</div>
+     <div class="label-desc">${escapeHtml(r.desc||'')}</div>
+     <div class="barcode-frame"><svg id="printBarcode"></svg></div>
+     <div class="label-meta">
+       <div class="label-meta-box"><small>Storage Bin</small><strong>BIN: ${escapeHtml(r.bin||'-')}</strong></div>
+       <div class="label-meta-box"><small>Identification</small><strong>MATERIAL CODE</strong></div>
+     </div>
+   </div>
+   <div class="label-bottom"><span>SCAN WITH BARCODE READER</span><span>SCANMAT</span></div>
  </div>`;
  if(window.JsBarcode){
-   JsBarcode('#printBarcode',String(r.code),{
-     format:'CODE128',
-     lineColor:'#000',
-     background:'#fff',
-     width:1.4,
-     height:34,
-     displayValue:true,
-     fontSize:8,
-     margin:1
-   });
+   JsBarcode('#printBarcode',String(r.code),{format:'CODE128',lineColor:'#10243e',background:'#ffffff',width:2.2,height:62,displayValue:true,fontOptions:'bold',font:'Arial',fontSize:12,margin:7});
  }
  window.print();
 }
