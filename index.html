@@ -6,6 +6,7 @@
 <title>ScanMAT | Smart Material Tracking & Digital Archive System</title>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:#f3f6fa;color:#172033}
 .app{display:flex;min-height:100vh}.sidebar{width:250px;background:#10243e;color:#fff;padding:22px 16px;position:fixed;inset:0 auto 0 0}.brand{font-size:19px;font-weight:700;padding:8px 10px 28px}.brand span{display:block;font-size:11px;font-weight:400;color:#aebed2;margin-top:5px}.nav button{width:100%;border:0;background:transparent;color:#d8e2ef;text-align:left;padding:13px 12px;border-radius:8px;margin:3px 0;cursor:pointer;font-size:14px}.nav button.active,.nav button:hover{background:#1d426b;color:#fff}.main{margin-left:250px;width:calc(100% - 250px);padding:25px 30px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.top h1{margin:0;font-size:25px}.top p{margin:5px 0 0;color:#6d7888;font-size:13px}.user{background:#fff;padding:9px 14px;border-radius:8px;border:1px solid #e0e6ed;font-size:13px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:20px}.card{background:#fff;border:1px solid #e2e8ef;border-radius:11px;padding:18px;box-shadow:0 2px 8px #1720330b}.label{color:#738096;font-size:12px}.value{font-size:26px;font-weight:700;margin-top:7px}.toolbar{display:flex;gap:10px;margin-bottom:16px}.search{flex:1;padding:12px 14px;border:1px solid #d7dfe8;border-radius:8px;background:#fff}.btn{border:0;border-radius:8px;padding:11px 15px;cursor:pointer;font-weight:600}.primary{background:#1769aa;color:#fff}.secondary{background:#fff;border:1px solid #d5dde7;color:#26364a}.panel{background:#fff;border:1px solid #e2e8ef;border-radius:11px;overflow:hidden}.table{width:100%;border-collapse:collapse;font-size:13px}.table th{background:#f7f9fb;color:#647185;text-align:left;font-weight:600}.table th,.table td{padding:12px;border-bottom:1px solid #edf1f5}.thumb{width:58px;height:48px;border-radius:6px;object-fit:cover;background:#eef2f6}.badge{padding:5px 8px;border-radius:20px;background:#e9f5ed;color:#267343;font-size:11px}.empty{padding:40px;text-align:center;color:#7c8796}.page{display:none}.page.active{display:block}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.field label{display:block;font-size:12px;color:#596779;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;padding:11px;border:1px solid #d5dde7;border-radius:7px}.field.full{grid-column:1/-1}.upload{border:2px dashed #cbd6e2;border-radius:10px;padding:25px;text-align:center;color:#748197}.upload img{max-width:260px;max-height:180px;display:none;margin:10px auto;border-radius:8px}.modal{position:fixed;inset:0;background:#09162599;display:none;align-items:center;justify-content:center;padding:20px}.modal.show{display:flex}.modalbox{background:#fff;border-radius:12px;max-width:900px;width:100%;max-height:90vh;overflow:auto;padding:22px}.modalhead{display:flex;justify-content:space-between;align-items:center}.modalhead h2{margin:0}.detail{display:grid;grid-template-columns:1fr 1.2fr;gap:20px;margin-top:18px}.detail img{width:100%;max-height:430px;object-fit:contain;background:#f2f5f8;border-radius:9px}.kv{display:grid;grid-template-columns:140px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid #edf1f5;font-size:13px}.kv b{color:#657286}.notice{padding:12px;background:#eef7ff;border-left:4px solid #1769aa;border-radius:5px;color:#35506d;font-size:13px;margin-bottom:16px}
@@ -153,10 +154,31 @@
 </style>
 </head>
 <body>
-<div class="app">
+<div id="cloudGate" style="display:flex;position:fixed;inset:0;z-index:9999;background:#f3f6fa;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border:1px solid #dfe6ee;border-radius:16px;max-width:520px;width:100%;padding:28px;box-shadow:0 15px 45px rgba(16,36,62,.12)">
+    <div style="font-size:22px;font-weight:800;color:#10243e">ScanMAT Cloud Database</div>
+    <p id="cloudStatus" style="font-size:13px;color:#657286;line-height:1.5;margin:8px 0 18px">Connect ScanMAT to Supabase so all authorized computers and phones share the same warehouse database.</p>
+    <div id="supabaseConfigBox">
+      <div class="field" style="margin-bottom:12px"><label>Supabase Project URL</label><input id="supabaseUrlInput" placeholder="https://your-project.supabase.co"></div>
+      <div class="field" style="margin-bottom:12px"><label>Supabase Publishable Key</label><input id="supabaseKeyInput" placeholder="sb_publishable_..." autocomplete="off"></div>
+      <button class="btn primary" style="width:100%" onclick="saveSupabaseConfig()">Connect to Supabase</button>
+      <div style="font-size:11px;color:#7b8797;margin-top:10px">Use only the browser-safe publishable/anon key. Never put the Supabase service-role/secret key in this HTML.</div>
+    </div>
+    <div id="loginBox" style="display:none">
+      <div class="notice">Supabase is connected. Sign in with a Supabase Auth user to access the shared warehouse database.</div>
+      <div class="field" style="margin-bottom:12px"><label>Email</label><input id="loginEmail" type="email" placeholder="warehouse@example.com" autocomplete="username"></div>
+      <div class="field" style="margin-bottom:12px"><label>Password</label><input id="loginPassword" type="password" placeholder="Password" autocomplete="current-password"></div>
+      <button class="btn primary" style="width:100%" onclick="signInToSupabase()">Sign In</button>
+      <button class="btn secondary" style="width:100%;margin-top:8px" onclick="changeSupabaseConfig()">Change Supabase Configuration</button>
+    </div>
+  </div>
+</div>
+<div class="app" id="appShell" style="display:none">
 <aside class="sidebar">
     <img src="logo.jpg" class="company-logo" alt="Company Logo"> 
   <div class="brand">ScanMAT<span>Digital Warehouse Register</span></div>
+  <div id="cloudUser" style="font-size:11px;color:#b9c8da;padding:0 10px 12px;word-break:break-all"></div>
+  <button class="btn secondary" style="width:calc(100% - 20px);margin:0 10px 12px;background:#ffffff12;border-color:#ffffff30;color:#fff;font-size:11px" onclick="signOutSupabase()">Sign Out</button>
   <div class="nav">
     <button class="active" onclick="showPage('dashboard',this)">▦ Dashboard</button>
     <button onclick="showPage('archive',this)">▣ Material Archive</button>
@@ -209,7 +231,7 @@
 
 <section id="archive" class="page">
   <div class="top"><div><h1>Material Archive</h1><p>Search and open the complete material record including barcode, stock and movement details.</p></div></div>
-  <div class="toolbar"><input class="search" id="archiveSearch" placeholder="Search by code, description, supplier, PO/GRN, bin or status..." oninput="renderArchive(this.value)"><button class="btn secondary" onclick="exportCSV()">Export CSV</button></div>
+  <div class="toolbar"><input class="search" id="archiveSearch" placeholder="Search by code, description, supplier, PO/GRN, bin or status..." oninput="renderArchive(this.value)"><button class="btn secondary" onclick="exportCSV()">Export CSV</button><button class="btn secondary" onclick="syncLocalDataToSupabase()">☁ Sync Local Data</button></div>
   <div class="notice" style="margin-top:-4px"><b>Category:</b> <span class="category-badge cat-a">A</span> <span class="category-badge cat-b">B</span> <span class="category-badge cat-c">C</span> &nbsp; <b>Status:</b> 105 / 103 / 101 / Reversed / Rejected are colour coded.</div>
   <div class="panel" style="overflow-x:auto"><table class="table archive-table"><thead><tr><th>PHOTO</th><th>ITEM CODE</th><th>DESCRIPTION</th><th>UOM</th><th>BIN</th><th>QTY</th><th>AVL</th><th>LAST GRN</th><th>LAST CONSUMPTION</th><th>STATUS</th><th>CATEGORY</th><th>BARCODE</th><th>ACTION</th></tr></thead><tbody id="archiveRows"></tbody></table></div>
 </section>
@@ -381,15 +403,205 @@
 <script>
 const KEY='DWA_ARCHIVE_V1';
 const ISSUE_KEY='DWA_ISSUES_V1';
+const SUPABASE_CONFIG_KEY='SCANMAT_SUPABASE_CONFIG_V1';
+const SUPABASE_BUCKET='material-photos';
 
 let records=JSON.parse(localStorage.getItem(KEY)||'[]');
 let issues=JSON.parse(localStorage.getItem(ISSUE_KEY)||'[]');
+const legacyRecords=records.map(r=>({...r}));
+const legacyIssues=issues.map(x=>({...x}));
 let activeStream=null;
+let supabaseClient=null;
+let supabaseUser=null;
+let cloudReady=false;
+let cloudSyncing=false;
 let scanTimer=null;
 let currentLabelRecord=null;
 let receivedChart=null;
 let issuedChart=null;
 
+
+function getSupabaseConfig(){
+  try{return JSON.parse(localStorage.getItem(SUPABASE_CONFIG_KEY)||'null')||{};}catch(e){return {};}
+}
+
+function saveSupabaseConfig(){
+  const url=document.getElementById('supabaseUrlInput').value.trim().replace(/\/$/,'');
+  const key=document.getElementById('supabaseKeyInput').value.trim();
+  if(!/^https:\/\/[^\s]+\.supabase\.co$/i.test(url)){alert('Enter a valid Supabase Project URL, for example https://your-project.supabase.co');return;}
+  if(!key){alert('Enter the Supabase publishable/anon key.');return;}
+  localStorage.setItem(SUPABASE_CONFIG_KEY,JSON.stringify({url,key}));
+  initSupabase(true);
+}
+
+function changeSupabaseConfig(){
+  supabaseClient=null;supabaseUser=null;cloudReady=false;
+  document.getElementById('loginBox').style.display='none';
+  document.getElementById('supabaseConfigBox').style.display='block';
+  document.getElementById('cloudStatus').textContent='Enter the Supabase project URL and browser-safe publishable/anon key.';
+}
+
+async function initSupabase(showLogin=false){
+  const cfg=getSupabaseConfig();
+  if(!cfg.url||!cfg.key||!window.supabase){
+    document.getElementById('cloudGate').style.display='flex';
+    document.getElementById('appShell').style.display='none';
+    return false;
+  }
+  try{
+    supabaseClient=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    const {data:{session}}=await supabaseClient.auth.getSession();
+    if(session){
+      await onSupabaseSignedIn(session.user);
+      return true;
+    }
+    document.getElementById('supabaseUrlInput').value=cfg.url;
+    document.getElementById('supabaseKeyInput').value=cfg.key;
+    document.getElementById('supabaseConfigBox').style.display='none';
+    document.getElementById('loginBox').style.display='block';
+    document.getElementById('cloudStatus').textContent='Supabase is configured. Sign in to load the shared warehouse data.';
+    document.getElementById('cloudGate').style.display='flex';
+    document.getElementById('appShell').style.display='none';
+    return false;
+  }catch(err){
+    console.error(err);
+    document.getElementById('cloudStatus').textContent='Supabase connection failed. Check the Project URL and publishable key.';
+    document.getElementById('supabaseConfigBox').style.display='block';
+    document.getElementById('loginBox').style.display='none';
+    document.getElementById('cloudGate').style.display='flex';
+    document.getElementById('appShell').style.display='none';
+    return false;
+  }
+}
+
+async function signInToSupabase(){
+  if(!supabaseClient){await initSupabase();if(!supabaseClient)return;}
+  const email=document.getElementById('loginEmail').value.trim();
+  const password=document.getElementById('loginPassword').value;
+  if(!email||!password){alert('Enter email and password.');return;}
+  const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+  if(error){alert('Sign in failed: '+error.message);return;}
+  await onSupabaseSignedIn(data.user);
+}
+
+async function onSupabaseSignedIn(user){
+  supabaseUser=user;cloudReady=true;
+  document.getElementById('cloudGate').style.display='none';
+  document.getElementById('appShell').style.display='flex';
+  document.getElementById('cloudUser').textContent='☁ '+(user.email||'Authenticated user');
+  await loadFromSupabase();
+  if(records.length===0 && legacyRecords.length>0){
+    const importNow=confirm(`Supabase is connected but the cloud database is empty. Import ${legacyRecords.length} existing local material record(s) and ${legacyIssues.length} issue transaction(s) into Supabase now?`);
+    if(importNow)await syncLocalDataToSupabase();
+  }
+  renderAll();
+}
+
+async function signOutSupabase(){
+  if(supabaseClient)await supabaseClient.auth.signOut();
+  cloudReady=false;supabaseUser=null;
+  document.getElementById('appShell').style.display='none';
+  document.getElementById('cloudGate').style.display='flex';
+  document.getElementById('loginBox').style.display='block';
+  document.getElementById('supabaseConfigBox').style.display='none';
+  document.getElementById('cloudStatus').textContent='Signed out. Sign in again to access the shared warehouse database.';
+}
+
+async function loadFromSupabase(){
+  if(!supabaseClient||!cloudReady)return;
+  const [{data:mat,error:matErr},{data:iss,error:issErr}]=await Promise.all([
+    supabaseClient.from('materials').select('*').order('created_at',{ascending:true}),
+    supabaseClient.from('issues').select('*').order('created_at',{ascending:true})
+  ]);
+  if(matErr||issErr){
+    console.error(matErr||issErr);
+    alert('Supabase database could not be loaded. Make sure the SQL setup script and RLS policies have been applied.');
+    return;
+  }
+  records=(mat||[]).map(normalizeMaterialFromDb);
+  issues=(iss||[]).map(normalizeIssueFromDb);
+  localStorage.setItem(KEY,JSON.stringify(records));
+  localStorage.setItem(ISSUE_KEY,JSON.stringify(issues));
+}
+
+function normalizeMaterialFromDb(r){
+  return {id:r.id,code:r.code,desc:r.description??r.desc??'',bin:r.bin??'',supplier:r.supplier??'',grn:r.grn??'',qty:+(r.qty??0),uom:r.uom??'',date:r.received_date??r.date??'',photo:r.photo_url??r.photo??'',remarks:r.remarks??'',status:r.status??'GR 105',category:r.category??'B',available:+(r.available??r.qty??0)};
+}
+function normalizeIssueFromDb(r){
+  return {id:r.id,date:r.issue_date??r.date??'',code:r.code,desc:r.description??r.desc??'',qty:+(r.qty??0),uom:r.uom??'',to:r.issued_to??r.to??'',ref:r.reference??r.ref??'',remarks:r.remarks??'',balance:+(r.balance??0),bin:r.bin??''};
+}
+function materialDbRow(r){return {id:r.id,code:r.code,description:r.desc||'',bin:r.bin||'',supplier:r.supplier||'',grn:r.grn||'',qty:+r.qty||0,uom:r.uom||'',received_date:r.date||null,photo_url:r.photo||null,remarks:r.remarks||'',status:r.status||'GR 105',category:r.category||'B',available:available(r)};}
+function issueDbRow(x){return {id:x.id,issue_date:x.date,code:x.code,description:x.desc||'',qty:+x.qty||0,uom:x.uom||'',issued_to:x.to||'',reference:x.ref||'',remarks:x.remarks||'',balance:+x.balance||0,bin:x.bin||''};}
+
+async function dataUrlToFile(dataUrl,code){
+  const m=String(dataUrl||'').match(/^data:([^;]+);base64,(.+)$/);
+  if(!m)return null;
+  const binary=atob(m[2]);
+  const bytes=new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+  const ext=(m[1].split('/')[1]||'jpg').replace(/[^a-z0-9]/gi,'')||'jpg';
+  return new File([bytes],`${code}_${Date.now()}.${ext}`,{type:m[1]});
+}
+
+async function uploadMaterialPhoto(file,code){
+  if(!file||!supabaseClient)return '';
+  const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'');
+  const safeCode=String(code).replace(/[^a-zA-Z0-9_-]/g,'_');
+  const path=`materials/${safeCode}_${Date.now()}.${ext||'jpg'}`;
+  const {error}=await supabaseClient.storage.from(SUPABASE_BUCKET).upload(path,file,{contentType:file.type||'image/jpeg',cacheControl:'3600',upsert:false});
+  if(error)throw error;
+  const {data}=supabaseClient.storage.from(SUPABASE_BUCKET).getPublicUrl(path);
+  return data.publicUrl;
+}
+
+async function insertMaterialCloud(rec){
+  if(!cloudReady)return true;
+  const {error}=await supabaseClient.from('materials').insert(materialDbRow(rec));
+  if(error){console.error(error);alert('Material saved locally but Supabase save failed: '+error.message);return false;}
+  return true;
+}
+async function updateMaterialCloud(rec){
+  if(!cloudReady)return true;
+  const {error}=await supabaseClient.from('materials').update(materialDbRow(rec)).eq('id',rec.id);
+  if(error){console.error(error);alert('Supabase material update failed: '+error.message);return false;}
+  return true;
+}
+async function insertIssueCloud(issue){
+  if(!cloudReady)return true;
+  const {error}=await supabaseClient.from('issues').insert(issueDbRow(issue));
+  if(error){console.error(error);alert('Issue was changed locally but Supabase transaction save failed: '+error.message);return false;}
+  return true;
+}
+async function syncLocalDataToSupabase(){
+  if(!cloudReady||!supabaseClient){alert('Sign in to Supabase first.');return;}
+  if(cloudSyncing)return;
+  cloudSyncing=true;
+  try{
+    const materialMap=new Map();
+    [...legacyRecords,...records].forEach(r=>{if(r&&r.code)materialMap.set(String(r.code).toLowerCase(),r);});
+    const issueMap=new Map();
+    [...legacyIssues,...issues].forEach(x=>{if(x&&x.id!=null)issueMap.set(String(x.id),x);});
+    let importedMaterials=0,importedIssues=0;
+    for(const original of materialMap.values()){
+      const r={...original};
+      if(String(r.photo||'').startsWith('data:image/')){
+        const photoFile=await dataUrlToFile(r.photo,r.code);
+        if(photoFile)r.photo=await uploadMaterialPhoto(photoFile,r.code);
+      }
+      const {data:existing}=await supabaseClient.from('materials').select('id').eq('code',r.code).maybeSingle();
+      if(!existing){const {error}=await supabaseClient.from('materials').insert(materialDbRow(r));if(error)throw error;importedMaterials++;}
+    }
+    for(const x of issueMap.values()){
+      const {data:existing}=await supabaseClient.from('issues').select('id').eq('id',x.id).maybeSingle();
+      if(!existing){const {error}=await supabaseClient.from('issues').insert(issueDbRow(x));if(error)throw error;importedIssues++;}
+    }
+    await loadFromSupabase();renderAll();
+    alert(`Local data sync completed. Materials added: ${importedMaterials}. Issue transactions added: ${importedIssues}.`);
+  }catch(err){console.error(err);alert('Local data sync failed: '+err.message);}
+  finally{cloudSyncing=false;}
+}
+
+function renderAll(){updateStats();renderRecent();renderArchive();renderBins();renderIssues();}
 
 function generateStandaloneBarcode(){
   const code=document.getElementById('generatorCode').value.trim();
@@ -604,7 +816,7 @@ function renderArchiveBarcodes(rows){
 }
 
 
-function deleteMaterial(id){
+async function deleteMaterial(id){
   const r=records.find(x=>x.id===id);
   if(!r)return;
   const confirmed=confirm(`Delete material "${r.code}" from the archive?\n\nThe material record will be removed from the archive. Existing issue transaction history will be retained.`);
@@ -612,6 +824,10 @@ function deleteMaterial(id){
   records=records.filter(x=>x.id!==id);
   if(currentLabelRecord && currentLabelRecord.id===id)currentLabelRecord=null;
   save();
+  if(cloudReady&&supabaseClient){
+    const {error}=await supabaseClient.from('materials').delete().eq('id',id);
+    if(error){alert('Material removed from this browser, but Supabase delete failed: '+error.message);await loadFromSupabase();renderAll();return;}
+  }
   closeModal();
   alert(`Material ${r.code} has been deleted from the archive.`);
 }
@@ -672,7 +888,7 @@ document.getElementById('photo').addEventListener('change',e=>{
  rd.readAsDataURL(f);
 });
 
-document.getElementById('materialForm').addEventListener('submit',e=>{
+document.getElementById('materialForm').addEventListener('submit',async e=>{
  e.preventDefault();
  const f=new FormData(e.target);
  const file=document.getElementById('photo').files[0];
@@ -683,24 +899,35 @@ document.getElementById('materialForm').addEventListener('submit',e=>{
    return;
  }
 
- const add=photo=>{
-   const qty=+f.get('qty')||0;
-   const rec={
-     id:Date.now(),
-     code:code,
-     desc:f.get('desc'),
-     bin:f.get('bin'),
-     supplier:f.get('supplier'),
-     grn:f.get('grn'),
-     qty:qty,
-     uom:f.get('uom'),
-     date:f.get('date'),
-     photo:photo,
-     remarks:f.get('remarks'),
-     status:f.get('status')||'GR 105',
-     category:f.get('category')||'B',
-     available:qty
-   };
+ const qty=+f.get('qty')||0;
+ const rec={
+   id:Date.now(),
+   code:code,
+   desc:f.get('desc'),
+   bin:f.get('bin'),
+   supplier:f.get('supplier'),
+   grn:f.get('grn'),
+   qty:qty,
+   uom:f.get('uom'),
+   date:f.get('date'),
+   photo:'',
+   remarks:f.get('remarks'),
+   status:f.get('status')||'GR 105',
+   category:f.get('category')||'B',
+   available:qty
+ };
+
+ try{
+   if(cloudReady&&file){
+     rec.photo=await uploadMaterialPhoto(file,code);
+   }else if(file){
+     const rd=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});
+     rec.photo=rd;
+   }
+   if(cloudReady){
+     const ok=await insertMaterialCloud(rec);
+     if(!ok)return;
+   }
    records.push(rec);
    save();
    currentLabelRecord=rec;
@@ -710,14 +937,9 @@ document.getElementById('materialForm').addEventListener('submit',e=>{
    document.getElementById('preview').style.display='none';
    document.getElementById('issueDate').value=localDateISO();
    alert('Material archive record saved and barcode generated.');
- };
-
- if(file){
-   const rd=new FileReader();
-   rd.onload=()=>add(rd.result);
-   rd.readAsDataURL(file);
- }else{
-   add('');
+ }catch(err){
+   console.error(err);
+   alert('Material could not be saved: '+err.message);
  }
 });
 
@@ -891,7 +1113,7 @@ function prepareIssue(code){
  findIssueMaterial();
 }
 
-function issueMaterial(){
+async function issueMaterial(){
  const code=document.getElementById('issueCode').value.trim();
  const r=records.find(x=>String(x.code).toLowerCase()===code.toLowerCase());
 
@@ -927,6 +1149,13 @@ function issueMaterial(){
 
  save();
  saveIssues();
+ if(cloudReady){
+   const materialOk=await updateMaterialCloud(r);
+   const issueOk=await insertIssueCloud(issues[issues.length-1]);
+   if(!materialOk||!issueOk){
+     alert('Warning: the local browser data was updated, but the Supabase transaction may not be fully synchronized. Use Sync Local Data after checking the database.');
+   }
+ }
 
  document.getElementById('issueQty').value='';
  document.getElementById('issueTo').value='';
@@ -1034,11 +1263,16 @@ document.getElementById('issueDate').value=localDateISO();
 
 seed();
 migrateRecords();
-updateStats();
-renderRecent();
-renderArchive();
-renderBins();
-renderIssues();
+
+(async function startup(){
+  const cfg=getSupabaseConfig();
+  if(cfg.url&&cfg.key){
+    await initSupabase();
+  }else{
+    document.getElementById('cloudGate').style.display='flex';
+    document.getElementById('appShell').style.display='none';
+  }
+})();
 </script>
 </body>
 </html>
