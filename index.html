@@ -404,7 +404,7 @@
       <div class="report-actions"><button class="btn secondary" onclick="downloadConsumptionReport()">↓ Consumption Detail</button><button class="btn secondary" onclick="downloadMonthlySummary()">↓ Monthly Summary</button></div>
     </div>
   </div>
-  <div class="notice">Main workflow: <b>Receive → Photograph → Register → Assign Bin → Search → Retrieve</b>. Each material record retains its generated CODE128 barcode.</div>
+  <div class="notice">Main workflow: <b>Receive → Photograph → Register → Assign Bin → Search → Retrieve</b></div>
   <div class="toolbar"><input class="search" id="dashSearch" placeholder="Search Material Code, Description, Bin Location..." oninput="renderRecent(this.value)"><button class="btn primary" onclick="showPage('register')">＋ Register Material</button></div>
   <div class="panel"><table class="table"><thead><tr><th>PHOTO</th><th>MATERIAL CODE</th><th>DESCRIPTION</th><th>BIN</th><th>RECEIVED</th><th>STATUS</th></tr></thead><tbody id="recent"></tbody></table></div>
 </section>
@@ -412,14 +412,14 @@
 <section id="archive" class="page">
   <div class="top"><div><h1>Material Archive</h1><p>Search and open the complete material record including barcode, stock and movement details.</p></div></div>
   <div class="toolbar"><input class="search" id="archiveSearch" placeholder="Search by code, description, supplier, PO/GRN, bin or status..." oninput="renderArchive(this.value)"><button class="btn secondary" onclick="exportCSV()">Export CSV</button><button class="btn secondary" onclick="syncLocalDataToSupabase()">☁ Sync Local Data</button></div>
-  <div class="notice" style="margin-top:-4px"><b>Department colour:</b> Material codes are colour coded by their prefix (I-, E-, M-, A-, etc.). &nbsp; <span class="dept-code dept-i">I-</span> <span class="dept-code dept-e">E-</span> <span class="dept-code dept-m">M-</span> <span class="dept-code dept-a">A-</span> <span class="dept-code dept-default">Other</span> &nbsp; <b>Status:</b> optional and colour coded when entered.</div>
+  <div class="notice" style="margin-top:-4px"><b> &nbsp; <span class="dept-code dept-i">I-</span> <span class="dept-code dept-e">E-</span> <span class="dept-code dept-m">M-</span> <span class="dept-code dept-a">A-</span> <span class="dept-code dept-default">Other</span> &nbsp; <b>Status:</b></div>
   <div class="panel" style="overflow-x:auto"><table class="table archive-table"><thead><tr><th>PHOTO</th><th>ITEM CODE</th><th>DESCRIPTION</th><th>UOM</th><th>BIN</th><th>AVAILABLE QTY</th><th>LAST GRN</th><th>LAST CONSUMPTION</th><th>STATUS</th><th>BARCODE</th><th>ACTION</th></tr></thead><tbody id="archiveRows"></tbody></table></div>
 </section>
 
 <section id="register" class="page">
-  <div class="top"><div><h1>Register Incoming Material</h1><p>Create a permanent digital archive record before putting the material away.</p></div></div>
+  <div class="top"><div><h1>Register Incoming Material</h1><p>Create a permanent digital archive record</p></div></div>
   <div class="panel" style="padding:22px">
-    <div class="notice"><b>Material Master:</b> Material Code, Description and UOM are controlled from the master list. These fields cannot be changed during registration. <span id="masterCount" style="display:block;margin-top:5px"></span></div>
+    <div class="notice"><b>Material Master:</b> Material Code, Description and UOM are controlled from the master list<span id="masterCount" style="display:block;margin-top:5px"></span></div>
     <form id="materialForm" class="formgrid">
       <div class="field"><label>Material Code *</label>
   <div class="scan-inline">
@@ -428,7 +428,7 @@
   </div>
   <div id="registerScanner" class="scanner">
     <video playsinline></video>
-    <div class="scan-help">Point the camera at the CODE128 barcode. On Android, allow camera permission when prompted.</div>
+    <div class="scan-help">Point the camera at the barcode. On Android, allow camera permission when prompted.</div>
     <button type="button" class="btn secondary" onclick="stopScanner()">Close Scanner</button>
   </div>
 </div>
