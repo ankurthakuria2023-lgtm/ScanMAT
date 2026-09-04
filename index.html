@@ -698,7 +698,191 @@ function printStandaloneBarcode(){
    .label-top{background:#10243e;color:#fff;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}.label-top .label-brand{color:#fff;font-size:10px;letter-spacing:1px}.label-type{font-size:9px;font-weight:700;padding:4px 7px;border:1px solid #ffffff55;border-radius:20px;white-space:nowrap}
    .label-body{padding:16px}.label-code{font-size:23px;letter-spacing:.5px;margin:0 0 5px}.label-desc{font-size:11px;min-height:28px;margin-bottom:13px}.barcode-frame{background:#fff;border:1px solid #dce4ec;border-radius:9px;padding:10px 8px 5px;text-align:center}.barcode-frame svg{width:100%;height:auto;max-height:90px}
    .label-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.label-meta-box{background:#eef3f8;border-radius:7px;padding:8px 9px}.label-meta-box small{display:block;color:#6b7889;font-size:8px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px}.label-meta-box strong{font-size:11px;color:#172033}.label-bottom{padding:9px 16px;border-top:1px dashed #cbd6e2;display:flex;justify-content:space-between;font-size:8px;color:#6b7889}
- </style></head><body><div class="label-card"><div class="label-top"><div class="label-brand">DIGITAL WAREHOUSE ARCHIVE</div><div class="label-type">CODE128</div></div><div class="label-body"><div class="label-code">${escapeHtml(code)}</div><div class="label-desc">${escapeHtml(desc)}</div><div class="barcode-frame">${svg}</div><div class="label-meta"><div class="label-meta-box"><small>Storage Bin</small><strong>BIN: ${escapeHtml(bin||'-')}</strong></div><div class="label-meta-box"><small>Identification</small><strong>MATERIAL CODE</strong></div></div></div><div class="label-bottom"><span>SCAN WITH BARCODE READER</span><span>SCANMAT</span></div></div><script>window.onload=function(){window.print();}<\/script></body></html>`);
+ 
+/* =========================================================
+   SCANMAT MOBILE APP UI — Android-first polish
+   ========================================================= */
+@media (max-width:600px){
+  :root{--mobile-nav:72px;--mobile-blue:#10243e;--mobile-accent:#1769aa}
+  html{scroll-behavior:smooth}
+  body{min-width:0;overflow-x:hidden;background:#f4f7fb;overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent}
+  .app{display:block;min-height:100svh;padding-top:68px;padding-bottom:var(--mobile-nav)}
+
+  /* Compact app header */
+  .sidebar{
+    position:fixed!important;left:0!important;right:0!important;top:0!important;bottom:auto!important;
+    width:100%!important;height:68px!important;min-height:68px!important;z-index:2000;
+    padding:7px 10px!important;border-radius:0!important;display:flex;align-items:center;
+    background:rgba(16,36,62,.98)!important;box-shadow:0 4px 18px rgba(16,36,62,.22)!important;
+  }
+  .company-logo{width:42px!important;height:42px!important;margin:0 8px 0 0!important;padding:2px!important;border-radius:10px!important;flex:0 0 42px}
+  .brand{padding:0!important;margin:0!important;text-align:left!important;font-size:17px!important;line-height:1.1;white-space:nowrap}
+  .brand span{font-size:9px!important;margin-top:3px!important;color:#b9c8da!important}
+  #cloudUser{display:none!important}
+  .sidebar>button{
+    position:absolute!important;right:9px!important;top:13px!important;width:auto!important;
+    margin:0!important;min-height:40px!important;height:40px!important;padding:7px 10px!important;
+    font-size:0!important;border-radius:10px!important;background:#ffffff14!important;
+  }
+  .sidebar>button:after{content:'↪';font-size:18px;color:#fff}
+
+  /* Bottom app navigation */
+  .nav{
+    position:fixed!important;left:0!important;right:0!important;bottom:0!important;z-index:2100;
+    height:72px!important;padding:7px 6px max(7px,env(safe-area-inset-bottom))!important;
+    display:flex!important;align-items:stretch!important;gap:5px!important;overflow-x:auto!important;
+    background:rgba(255,255,255,.98)!important;border-top:1px solid #dfe6ee!important;
+    box-shadow:0 -7px 24px rgba(16,36,62,.12)!important;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    scrollbar-width:none!important;
+  }
+  .nav::-webkit-scrollbar{display:none!important}
+  .nav button{
+    flex:0 0 82px!important;width:82px!important;height:56px!important;min-height:56px!important;
+    margin:0!important;padding:7px 4px!important;border:0!important;border-radius:12px!important;
+    background:transparent!important;color:#667085!important;text-align:center!important;
+    font-size:9px!important;font-weight:700!important;line-height:1.15!important;white-space:normal!important;
+  }
+  .nav button.active{background:#eaf3fb!important;color:#1769aa!important}
+  .nav button:hover{background:#f3f6fa!important;color:#1769aa!important}
+
+  /* Main content becomes edge-to-edge app canvas */
+  .main{margin:0!important;width:100%!important;padding:12px 10px 24px!important}
+  .page{width:100%!important;min-width:0!important}
+  .top{margin-bottom:12px!important;gap:8px!important}
+  .top h1{font-size:21px!important;line-height:1.15!important}
+  .top p{font-size:11px!important;line-height:1.4!important;max-width:90vw}
+  .user{font-size:10px!important;padding:7px 9px!important;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+
+  /* Cards / dashboard */
+  .dashboard-hero{margin:0 0 10px!important;padding:16px!important;border-radius:16px!important}
+  .dashboard-hero h1{font-size:22px!important}
+  .dashboard-hero p{font-size:11px!important}
+  .hero-chip{padding:7px 9px!important;font-size:8px!important}
+  .dashboard-kpis,.kpi-grid,.stats{grid-template-columns:1fr 1fr!important;gap:8px!important}
+  .dashboard-kpis .card,.kpi-grid .card,.card{padding:12px!important;border-radius:13px!important;min-height:0!important}
+  .dashboard-kpis .value,.kpi-grid .value,.value{font-size:20px!important;margin-top:5px!important}
+  .label{font-size:9px!important;line-height:1.25!important}
+  .kpi-sub{font-size:8px!important}
+  .chart-grid{grid-template-columns:1fr!important;gap:10px!important}
+  .chart-card{padding:12px!important;min-height:0!important;border-radius:14px!important}
+  .chart-head{align-items:flex-start!important}
+  .dashboard-card-title{font-size:12px!important}
+  .chart-tag{font-size:8px!important;padding:4px 6px!important}
+  .chart-wrap{height:190px!important}
+
+  /* Touch-friendly controls */
+  button,.btn,input,select,textarea{min-height:46px!important}
+  .btn{padding:10px 13px!important;border-radius:10px!important;font-size:12px!important}
+  input,select,textarea{font-size:16px!important;line-height:1.3!important;border-radius:10px!important}
+  input[type="date"]{min-height:46px!important}
+  .toolbar{gap:7px!important;margin-bottom:11px!important}
+  .toolbar .search{min-width:100%!important;width:100%!important}
+  .toolbar .btn{flex:1 1 calc(50% - 4px)!important;min-width:0!important}
+  .formgrid{grid-template-columns:1fr!important;gap:11px!important}
+  .field.full{grid-column:auto!important}
+  .field label{font-size:10px!important;margin-bottom:5px!important;font-weight:700}
+  .scan-inline{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:7px!important}
+  .scan-inline input{width:100%!important;min-width:0!important}
+  .scan-inline .scan-btn{width:82px!important;min-width:82px!important}
+  .scan-inline .scan-btn + .btn{width:auto!important}
+  .issue-actions{gap:7px!important}
+  .issue-actions .btn{width:100%!important}
+  .upload{padding:17px 10px!important;border-radius:12px!important}
+  .upload input[type=file]{min-height:auto!important;font-size:14px!important;width:100%}
+  .upload img{max-width:100%!important;max-height:230px!important}
+  .notice{font-size:11px!important;line-height:1.45!important;padding:11px!important}
+  .master-help{font-size:10px!important;line-height:1.35}
+
+  /* Camera scanner as a native-looking sheet */
+  .scanner{padding:8px!important;border-radius:14px!important;margin-top:8px!important;background:#0d1d31!important;border:0!important;box-shadow:0 8px 24px rgba(0,0,0,.16)!important}
+  .scanner video{width:100%!important;max-height:none!important;aspect-ratio:4/3!important;object-fit:cover!important;border-radius:11px!important;background:#000!important}
+  .scan-help{color:#dbe7f4!important;font-size:10px!important;line-height:1.4!important;padding:2px 3px}
+  .scanner .btn{background:#fff!important;color:#172033!important;width:100%!important;margin-top:6px}
+
+  /* Archive: turn the wide desktop table into compact material cards */
+  .archive-table{min-width:0!important;width:100%!important;border-collapse:separate!important;border-spacing:0 9px!important;font-size:12px!important}
+  .archive-table thead{display:none!important}
+  .archive-table tbody{display:block!important;width:100%!important}
+  .archive-table tbody tr{
+    display:grid!important;grid-template-columns:74px minmax(0,1fr)!important;
+    gap:0!important;background:#fff!important;border:1px solid #e1e8f0!important;border-radius:15px!important;
+    overflow:hidden!important;box-shadow:0 4px 14px rgba(16,36,62,.06)!important;margin:0 0 9px!important;
+  }
+  .archive-table tbody td{border:0!important;padding:7px 10px!important;min-width:0!important;background:#fff!important;vertical-align:middle!important}
+  .archive-table tbody td:before{display:block;font-size:8px!important;color:#8a95a5!important;font-weight:800!important;letter-spacing:.35px!important;margin-bottom:2px!important}
+  .archive-table tbody td:nth-child(1){grid-column:1;grid-row:1 / span 2;padding:10px 6px!important;display:flex!important;align-items:flex-start!important;justify-content:center!important}
+  .archive-table tbody td:nth-child(1):before{display:none!important}
+  .archive-table tbody td:nth-child(2){grid-column:2;grid-row:1;padding-top:11px!important}
+  .archive-table tbody td:nth-child(2):before{content:'ITEM CODE'}
+  .archive-table tbody td:nth-child(3){grid-column:2;grid-row:2;padding-top:2px!important;padding-bottom:9px!important}
+  .archive-table tbody td:nth-child(3):before{content:'DESCRIPTION'}
+  .archive-table tbody td:nth-child(4){grid-column:1;grid-row:3;padding-left:10px!important}
+  .archive-table tbody td:nth-child(4):before{content:'UOM'}
+  .archive-table tbody td:nth-child(5){grid-column:2;grid-row:3}
+  .archive-table tbody td:nth-child(5):before{content:'BIN LOCATION'}
+  .archive-table tbody td:nth-child(6){grid-column:1;grid-row:4}
+  .archive-table tbody td:nth-child(6):before{content:'AVAILABLE'}
+  .archive-table tbody td:nth-child(7),.archive-table tbody td:nth-child(8){display:none!important}
+  .archive-table tbody td:nth-child(9){grid-column:2;grid-row:4}
+  .archive-table tbody td:nth-child(9):before{content:'STATUS'}
+  .archive-table tbody td:nth-child(10){grid-column:1 / -1;grid-row:5;border-top:1px solid #edf1f5!important;padding:8px 10px!important}
+  .archive-table tbody td:nth-child(10):before{content:'BARCODE';text-align:left}
+  .archive-table tbody td:nth-child(11){grid-column:1 / -1;grid-row:6;border-top:1px solid #edf1f5!important;padding:8px 10px!important}
+  .archive-table tbody td:nth-child(11):before{content:'ACTIONS'}
+  .archive-photo,.archive-photo-empty{width:58px!important;height:58px!important;border-radius:11px!important}
+  .dept-code{max-width:100%;overflow:hidden;text-overflow:ellipsis;font-size:10px!important;padding:6px 7px!important}
+  .material-code-link{font-size:12px!important;text-decoration:none!important;word-break:break-word}
+  .barcode-cell{min-width:0!important;text-align:center!important}
+  .archive-barcode{width:min(180px,85vw)!important;height:auto!important;max-height:58px!important}
+  .barcode-code-text{font-size:9px!important}
+  .archive-table tbody td:nth-child(11) .btn{width:100%!important}
+
+  /* Other data tables remain swipeable, but inside rounded cards */
+  .panel{border-radius:14px!important;overflow:hidden!important}
+  .panel[style*="overflow-x:auto"]{overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
+  .table:not(.archive-table){min-width:620px!important;font-size:11px!important}
+  .table:not(.archive-table) th,.table:not(.archive-table) td{padding:9px 8px!important}
+
+  /* Issue screen */
+  .issue-info{padding:13px!important;border-radius:13px!important}
+  .available-box{font-size:22px!important;padding:9px 0!important}
+
+  /* Detail modal / barcode generator */
+  .modal{padding:5px!important;align-items:flex-end!important}
+  .modalbox{width:100%!important;max-width:none!important;max-height:94svh!important;padding:13px!important;border-radius:18px 18px 0 0!important}
+  .modalhead{position:sticky!important;top:-13px!important;background:#fff!important;padding:3px 0 10px!important;z-index:2}
+  .modalhead h2{font-size:17px!important}
+  .detail{grid-template-columns:1fr!important;gap:10px!important;margin-top:8px!important}
+  .detail img{max-height:260px!important;border-radius:12px!important}
+  .kv{grid-template-columns:105px minmax(0,1fr)!important;font-size:11px!important;gap:6px!important;padding:8px 0!important}
+  .barcode-modal-preview{padding:12px!important;border-radius:12px!important}
+  .label-preview{width:100%!important}
+  .label-card{width:100%!important;max-width:430px!important;border-radius:13px!important}
+  .label-body{padding:13px!important}
+  .label-code{font-size:20px!important;word-break:break-all}
+  .label-desc{font-size:10px!important}
+  .label-meta{gap:6px!important}
+  .label-meta-box{padding:7px!important}
+  .label-meta-box strong{font-size:10px!important}
+
+  /* Make barcode generator form comfortable on a phone */
+  #barcodeGenerator .panel{padding:13px!important}
+  #standaloneBarcodeResult{margin-top:12px!important}
+
+  /* Prevent accidental horizontal page movement */
+  img,svg,video,canvas{max-width:100%}
+}
+
+/* Small phones */
+@media (max-width:380px){
+  .brand{font-size:15px!important}.brand span{font-size:8px!important}
+  .company-logo{width:38px!important;height:38px!important;flex-basis:38px}
+  .sidebar{height:62px!important;min-height:62px!important}.app{padding-top:62px!important}
+  .nav{height:68px!important}
+  .nav button{flex-basis:76px!important;width:76px!important;font-size:8px!important}
+  .dashboard-kpis,.kpi-grid{gap:6px!important}.card{padding:10px!important}
+}
+</style></head><body><div class="label-card"><div class="label-top"><div class="label-brand">DIGITAL WAREHOUSE ARCHIVE</div><div class="label-type">CODE128</div></div><div class="label-body"><div class="label-code">${escapeHtml(code)}</div><div class="label-desc">${escapeHtml(desc)}</div><div class="barcode-frame">${svg}</div><div class="label-meta"><div class="label-meta-box"><small>Storage Bin</small><strong>BIN: ${escapeHtml(bin||'-')}</strong></div><div class="label-meta-box"><small>Identification</small><strong>MATERIAL CODE</strong></div></div></div><div class="label-bottom"><span>SCAN WITH BARCODE READER</span><span>SCANMAT</span></div></div><script>window.onload=function(){window.print();}<\/script></body></html>`);
  w.document.close();
 }
 
