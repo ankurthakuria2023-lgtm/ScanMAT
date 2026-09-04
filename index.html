@@ -332,6 +332,32 @@
   #archive .archive-photo,#archive .archive-photo-empty{width:53px!important;height:53px!important}
 }
 </style>
+
+<style id="scanmat-register-single-column">
+/* Mobile registration: one field after another, with generous touch targets */
+@media (max-width: 600px){
+  #register .panel{padding:16px 14px!important}
+  #register .formgrid{display:flex!important;flex-direction:column!important;gap:16px!important;width:100%!important}
+  #register .field{display:flex!important;flex-direction:column!important;width:100%!important;min-width:0!important}
+  #register .field label{font-size:14px!important;font-weight:700!important;line-height:1.25!important;margin-bottom:7px!important;color:#29496d!important}
+  #register .field input,#register .field select,#register .field textarea{width:100%!important;min-height:56px!important;height:auto!important;font-size:18px!important;padding:14px 16px!important;border-radius:12px!important}
+  #register .scan-inline{display:flex!important;flex-direction:column!important;gap:10px!important;width:100%!important}
+  #register .scan-inline input{width:100%!important;min-width:0!important;min-height:58px!important;font-size:19px!important}
+  #register .scan-inline .scan-btn{width:100%!important;min-width:100%!important;min-height:54px!important;font-size:16px!important;font-weight:800!important}
+  #register .master-help{font-size:13px!important;line-height:1.45!important;margin-top:8px!important}
+  #register .master-locked{font-size:18px!important;font-weight:700!important}
+  #register .notice{font-size:14px!important;line-height:1.5!important;padding:16px!important;margin-bottom:4px!important}
+  #register .notice b{font-size:17px!important}
+  #register .scanner{margin-top:2px!important;width:100%!important;padding:10px!important}
+  #register .scanner video{width:100%!important;max-height:none!important;aspect-ratio:4/3!important}
+  #register .scanner .scan-help{font-size:13px!important;line-height:1.4!important}
+  #register .scanner .btn{min-height:50px!important;font-size:15px!important}
+  #register .upload{width:100%!important;min-height:110px!important}
+  #register .upload label{font-size:14px!important}
+  #register .formgrid > .field.full{grid-column:auto!important}
+}
+</style>
+
 </head>
 <body>
 <div id="cloudGate" style="display:flex;position:fixed;inset:0;z-index:9999;background:#f3f6fa;align-items:center;justify-content:center;padding:20px">
