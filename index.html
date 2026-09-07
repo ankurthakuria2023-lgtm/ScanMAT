@@ -439,7 +439,7 @@
       <div class="report-actions"><button class="btn secondary" onclick="downloadConsumptionReport()">↓ Consumption Detail</button><button class="btn secondary" onclick="downloadMonthlySummary()">↓ Monthly Summary</button></div>
     </div>
   </div>
-  <div class="notice">Main workflow: <b>Receive → Photograph → Register → Assign Bin → Search → Retrieve</b>. Each material record retains its generated CODE128 barcode.</div>
+  <div class="notice">Main workflow: <b>Receive → Photograph → Register → Assign Bin → Search → Retrieve</b>. Each material record retains its generated barcode.</div>
   <div class="toolbar"><input class="search" id="dashSearch" placeholder="Search Material Code, Description, Bin Location..." oninput="renderRecent(this.value)"><button class="btn primary" onclick="showPage('register')">＋ Register Material</button></div>
   <div class="panel"><table class="table"><thead><tr><th>PHOTO</th><th>MATERIAL CODE</th><th>DESCRIPTION</th><th>BIN</th><th>RECEIVED</th><th>STATUS</th></tr></thead><tbody id="recent"></tbody></table></div>
 </section>
