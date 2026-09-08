@@ -447,7 +447,7 @@
 <section id="archive" class="page">
   <div class="top"><div><h1>Material Archive</h1><p>Search and open the complete material record including barcode, stock and movement details.</p></div></div>
   <div class="toolbar"><input class="search" id="archiveSearch" placeholder="Search by code, description, supplier, PO/GRN, bin or status..." oninput="renderArchive(this.value)"><button class="btn secondary" onclick="exportCSV()">Export CSV</button><button class="btn secondary" onclick="syncLocalDataToSupabase()">☁ Sync Local Data</button></div>
-  <div class="notice" style="margin-top:-4px"><b> &nbsp; <span class="dept-code dept-i">I-</span> <span class="dept-code dept-e">E-</span> <span class="dept-code dept-m">M-</span> <span class="dept-code dept-a">A-</span> <span class="dept-code dept-default">Other</span> &nbsp; <b></b>.</div>
+  <div class="notice" style="margin-top:-4px"><b> &nbsp; <b></b></div>
   <div class="panel" style="overflow-x:auto"><table class="table archive-table"><thead><tr><th>PHOTO</th><th>ITEM CODE</th><th>DESCRIPTION</th><th>UOM</th><th>BIN</th><th>AVAILABLE QTY</th><th>LAST GRN</th><th>LAST CONSUMPTION</th><th>STATUS</th><th>BARCODE</th><th>ACTION</th></tr></thead><tbody id="archiveRows"></tbody></table></div>
 </section>
 
