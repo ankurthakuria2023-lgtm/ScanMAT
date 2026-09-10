@@ -476,9 +476,22 @@
       <div class="field"><label>Status (Optional)</label><select name="status"><option value="">Not specified</option><option value="GR 105">GR 105</option><option value="GR 103">GR 103</option><option value="GR 101">GR 101</option><option value="REVERSED">REVERSED</option><option value="REJECTED">REJECTED</option></select></div>
       <div class="field"><label>Received Date</label><input name="date" type="date"></div>
       <div class="field full"><label>Material Photograph *</label><div class="upload">
-        <input id="photo" type="file" accept="image/*" required>
-        <div>Upload / capture the material photograph</div>
-        <img id="preview">
+        <input id="photo" type="file" accept="image/*" capture="environment" required>
+        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:8px">
+          <button type="button" class="btn secondary" onclick="openMaterialCamera()">📷 Open Camera</button>
+          <button type="button" class="btn secondary" onclick="document.getElementById('photo').click()">📁 Choose Photo</button>
+        </div>
+        <div style="font-size:11px;color:#748197;margin-top:8px">Choose an existing photograph or capture the material now.</div>
+        <div id="materialCamera" class="scanner" style="margin-top:12px">
+          <video id="materialCameraVideo" playsinline autoplay muted></video>
+          <canvas id="materialCameraCanvas" style="display:none"></canvas>
+          <div class="scan-help">Position the material inside the camera view, then capture the photograph.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+            <button type="button" class="btn primary" onclick="captureMaterialPhoto()">📸 Capture Photograph</button>
+            <button type="button" class="btn secondary" onclick="closeMaterialCamera()">Close Camera</button>
+          </div>
+        </div>
+        <img id="preview" alt="Material photograph preview">
       </div></div>
       <div class="field full"><label>Remarks</label><textarea name="remarks" rows="3" placeholder="Condition, identification marks, serial number, preservation notes..."></textarea></div>
       <div class="field full"><button class="btn primary" type="submit">Save Digital Archive Record</button></div>
@@ -1762,16 +1775,91 @@ function escapeJs(s){
  return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
 }
 
-document.getElementById('photo').addEventListener('change',e=>{
- const f=e.target.files[0];
- if(!f)return;
+let materialCameraStream=null;
+
+function showMaterialPhotoPreview(file){
+ if(!file)return;
  const rd=new FileReader();
  rd.onload=()=>{
    const p=document.getElementById('preview');
    p.src=rd.result;
    p.style.display='block';
  };
- rd.readAsDataURL(f);
+ rd.readAsDataURL(file);
+}
+
+function setCapturedMaterialPhoto(blob){
+ const file=new File([blob],`material_${Date.now()}.jpg`,{type:'image/jpeg'});
+ try{
+   const dt=new DataTransfer();
+   dt.items.add(file);
+   document.getElementById('photo').files=dt.files;
+ }catch(err){
+   console.error(err);
+   alert('Unable to attach the captured photograph. Please use Choose Photo instead.');
+   return false;
+ }
+ showMaterialPhotoPreview(file);
+ return true;
+}
+
+async function openMaterialCamera(){
+ const box=document.getElementById('materialCamera');
+ const video=document.getElementById('materialCameraVideo');
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+   alert('Camera access is not supported by this browser. Please use Choose Photo instead.');
+   return;
+ }
+ try{
+   if(materialCameraStream)materialCameraStream.getTracks().forEach(t=>t.stop());
+   materialCameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false});
+   video.srcObject=materialCameraStream;
+   box.classList.add('show');
+   try{await video.play();}catch(e){}
+ }catch(err){
+   console.error(err);
+   if(err&&err.name==='NotAllowedError')alert('Camera permission was denied. Please allow camera access in your browser settings, then try again.');
+   else if(err&&err.name==='NotFoundError')alert('No camera was found on this device. Please use Choose Photo instead.');
+   else alert('Unable to open the camera. Please use Choose Photo instead.');
+ }
+}
+
+function captureMaterialPhoto(){
+ const video=document.getElementById('materialCameraVideo');
+ const canvas=document.getElementById('materialCameraCanvas');
+ if(!materialCameraStream||!video.videoWidth||!video.videoHeight){
+   alert('Open the camera first and wait for the preview to appear.');
+   return;
+ }
+ canvas.width=video.videoWidth;
+ canvas.height=video.videoHeight;
+ const ctx=canvas.getContext('2d');
+ ctx.drawImage(video,0,0,canvas.width,canvas.height);
+ canvas.toBlob(blob=>{
+   if(blob&&setCapturedMaterialPhoto(blob)){
+     closeMaterialCamera();
+   }else{
+     alert('Could not capture the photograph. Please try again.');
+   }
+ },'image/jpeg',0.9);
+}
+
+function closeMaterialCamera(){
+ if(materialCameraStream){
+   materialCameraStream.getTracks().forEach(t=>t.stop());
+   materialCameraStream=null;
+ }
+ const video=document.getElementById('materialCameraVideo');
+ if(video)video.srcObject=null;
+ const box=document.getElementById('materialCamera');
+ if(box)box.classList.remove('show');
+}
+
+document.getElementById('photo').addEventListener('change',e=>{
+ const f=e.target.files[0];
+ if(!f)return;
+ closeMaterialCamera();
+ showMaterialPhotoPreview(f);
 });
 
 
@@ -1843,6 +1931,8 @@ document.getElementById('materialForm').addEventListener('submit',async e=>{
    generateLabel(rec);
    document.getElementById('codebox').style.display='block';
    e.target.reset();
+   closeMaterialCamera();
+   document.getElementById('preview').src='';
    document.getElementById('preview').style.display='none';
    document.getElementById('issueDate').value=localDateISO();
    alert('Material archive record saved and barcode generated.');
