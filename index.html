@@ -507,9 +507,9 @@
           <div id="labelDesc" class="label-desc"></div>
           <div class="barcode-frame"><svg id="barcode"></svg></div>
           <div class="label-meta">
-            <div class="label-meta-box"><small>Storage Bin</small><strong id="labelBin">-</strong></div>
-            <div class="label-meta-box"><small>Storage Bin</small><strong id="labelBin">-</strong></div><div class="label-meta-box"><small>PO No.</small><strong id="labelPO">-</strong></div><div class="label-meta-box"><small>Date</small><strong id="labelDate">-</strong></div>
-          </div>
+              <div class="label-meta-box"><small>Storage Bin</small><strong id="labelBin">-</strong></div>
+              <div class="label-meta-box"><small>PO / DATE</small><strong><span id="labelPO">-</span><span class="meta-separator"> • </span><span id="labelDate">-</span></strong></div>
+            </div>
         </div>
         <div class="label-bottom"><span>SCAN WITH BARCODE READER</span><span>SCANMAT</span></div>
       </div>
@@ -563,9 +563,9 @@
             <div id="standaloneLabelDesc" class="label-desc"></div>
             <div class="barcode-frame"><svg id="standaloneBarcode"></svg></div>
             <div class="label-meta">
-              <div class="label-meta-box"><small>Storage Bin</small><strong id="standaloneLabelBin">-</strong></div>
-              <div class="label-meta-box"><small>Storage Bin</small><strong id="standaloneLabelBin">-</strong></div><div class="label-meta-box"><small>PO No.</small><strong id="standaloneLabelPO">-</strong></div><div class="label-meta-box"><small>Date</small><strong id="standaloneLabelDate">-</strong></div>
-            </div>
+                <div class="label-meta-box"><small>Storage Bin</small><strong id="standaloneLabelBin">-</strong></div>
+                <div class="label-meta-box"><small>PO / DATE</small><strong><span id="standaloneLabelPO">-</span><span class="meta-separator"> • </span><span id="standaloneLabelDate">-</span></strong></div>
+              </div>
           </div>
           <div class="label-bottom"><span>SCAN WITH BARCODE READER</span><span>SCANMAT</span></div>
         </div>
@@ -1567,7 +1567,82 @@ function printStandaloneBarcode(){
   #materialForm .scan-inline input{font-size:19px!important}
 }
 
-</style></head><body><div class="label-card"><div class="label-top"><div class="label-brand">DIGITAL WAREHOUSE ARCHIVE</div><div class="label-type">CODE128</div></div><div class="label-body"><div class="label-code">${escapeHtml(code)}</div><div class="label-desc">${escapeHtml(desc)}</div><div class="barcode-frame">${svg}</div><div class="label-meta"><div class="label-meta-box"><small>Storage Bin</small><strong>BIN: ${escapeHtml(bin||'-')}</strong></div><div class="label-meta-box"><small>PO No.</small><strong>${escapeHtml(standaloneLabelPO||'-')}</strong></div><div class="label-meta-box"><small>Date</small><strong>${escapeHtml(standaloneLabelDate||'-')}</strong></div></div></div><div class="label-bottom"><span>SCAN WITH BARCODE READER</span><span>SCANMAT</span></div></div><script>window.onload=function(){window.print();}<\/script></body></html>`);
+
+/* Professional material tag refinement */
+.label-card .label-top{
+  padding:14px 17px;
+  border-bottom:3px solid #1769aa;
+}
+.label-card .label-brand{
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:1.15px;
+}
+.label-card .label-type{
+  font-size:8px;
+  letter-spacing:.5px;
+  padding:5px 8px;
+}
+.label-card .label-body{
+  padding:17px;
+}
+.label-card .label-code{
+  font-size:24px;
+  font-weight:850;
+  letter-spacing:.7px;
+  line-height:1.15;
+}
+.label-card .label-desc{
+  font-size:11px;
+  color:#536274;
+  min-height:30px;
+  margin-bottom:14px;
+}
+.label-card .barcode-frame{
+  border:1px solid #d6e0ea;
+  border-radius:10px;
+  padding:11px 9px 6px;
+  box-shadow:inset 0 0 0 1px #f5f8fb;
+}
+.label-card .label-meta{
+  grid-template-columns:1fr 1.35fr;
+  gap:9px;
+  margin-top:13px;
+}
+.label-card .label-meta-box{
+  background:#f0f4f8;
+  border:1px solid #e0e7ef;
+  border-radius:8px;
+  padding:9px 10px;
+  min-height:47px;
+}
+.label-card .label-meta-box small{
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.75px;
+}
+.label-card .label-meta-box strong{
+  font-size:11px;
+  line-height:1.3;
+  word-break:break-word;
+}
+.label-card .meta-separator{
+  color:#8a97a7;
+  padding:0 2px;
+}
+.label-card .label-bottom{
+  background:#f8fafc;
+  font-size:8px;
+  font-weight:700;
+}
+@media(max-width:600px){
+  .label-card .label-meta{grid-template-columns:1fr 1.35fr!important}
+  .label-card .label-body{padding:14px!important}
+  .label-card .label-code{font-size:21px!important}
+  .label-card .label-meta-box{padding:8px!important}
+}
+
+</style></head><body><div class="label-card"><div class="label-top"><div class="label-brand">DIGITAL WAREHOUSE ARCHIVE</div><div class="label-type">CODE128</div></div><div class="label-body"><div class="label-code">${escapeHtml(code)}</div><div class="label-desc">${escapeHtml(desc)}</div><div class="barcode-frame">${svg}</div><div class="label-meta"><div class="label-meta-box"><small>Storage Bin</small><strong>BIN: ${escapeHtml(bin||'-')}</strong></div><div class="label-meta-box"><small>PO / DATE</small><strong>${escapeHtml(standaloneLabelPO||'-')} <span style="color:#8a97a7">•</span> ${escapeHtml(standaloneLabelDate||'-')}</strong></div></div></div><div class="label-bottom"><span>SCAN WITH BARCODE READER</span><span>SCANMAT</span></div></div><script>window.onload=function(){window.print();}<\/script></body></html>`);
  w.document.close();
 }
 
@@ -1969,9 +2044,9 @@ function printCurrentLabel(){
      <div class="label-desc">${escapeHtml(r.desc||'')}</div>
      <div class="barcode-frame"><svg id="printBarcode"></svg></div>
      <div class="label-meta">
-       <div class="label-meta-box"><small>Storage Bin</small><strong>BIN: ${escapeHtml(r.bin||'-')}</strong></div>
-       <div class="label-meta-box"><small>PO No.</small><strong>${escapeHtml(r.grn||'-')}</strong></div><div class="label-meta-box"><small>Date</small><strong>${escapeHtml(r.date||'-')}</strong></div>
-     </div>
+      <div class="label-meta-box"><small>Storage Bin</small><strong>BIN: ${escapeHtml(r.bin||'-')}</strong></div>
+      <div class="label-meta-box"><small>PO / DATE</small><strong>${escapeHtml(r.grn||'-')} <span style="color:#8a97a7">•</span> ${escapeHtml(r.date||'-')}</strong></div>
+    </div>
    </div>
    <div class="label-bottom"><span>SCAN WITH BARCODE READER</span><span>SCANMAT</span></div>
  </div>`;
