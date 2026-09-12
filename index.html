@@ -1977,6 +1977,10 @@ document.getElementById('materialForm').addEventListener('submit',async e=>{
  if(existing){
    if(qty<=0){alert('Enter a valid Available Quantity.');return;}
    existing.available=+(available(existing)+qty).toFixed(6);
+   // Treat this re-registration (including reversed/returned material) as a
+   // receipt on the selected registration date so Dashboard shows it in
+   // Received Today when the date is today.
+   existing.date=f.get('date')||localDateISO();
    try{
      if(cloudReady){
        const ok=await updateMaterialCloud(existing);
