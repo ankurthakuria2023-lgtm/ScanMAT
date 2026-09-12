@@ -1969,12 +1969,36 @@ document.getElementById('materialForm').addEventListener('submit',async e=>{
  const master=findMaster(code);
  if(!master){alert('Material Code is not present in the Material Master. Register only master-listed codes.');handleRegistrationCode();return;}
 
- if(records.some(r=>String(r.code).trim().toLowerCase()===code.toLowerCase())){
-   alert('This Material Code already exists. Use the existing record or another unique code.');
+ const existing=records.find(r=>String(r.code).trim().toLowerCase()===code.toLowerCase());
+ const qty=+f.get('available')||0;
+
+ // Existing material registration: add the new quantity to the original
+ // available quantity instead of creating a duplicate archive record.
+ if(existing){
+   if(qty<=0){alert('Enter a valid Available Quantity.');return;}
+   existing.available=+(available(existing)+qty).toFixed(6);
+   try{
+     if(cloudReady){
+       const ok=await updateMaterialCloud(existing);
+       if(!ok)return;
+     }
+     save();
+     currentLabelRecord=existing;
+     generateLabel(existing);
+     document.getElementById('codebox').style.display='block';
+     e.target.reset();
+     closeMaterialCamera();
+     document.getElementById('preview').src='';
+     document.getElementById('preview').style.display='none';
+     document.getElementById('issueDate').value=localDateISO();
+     alert(`Material quantity added successfully. Available Quantity: ${existing.available} ${existing.uom||''}`);
+   }catch(err){
+     console.error(err);
+     alert('Material quantity could not be updated: '+err.message);
+   }
    return;
  }
 
- const qty=+f.get('available')||0;
  const rec={
    id:Date.now(),
    code:code,
