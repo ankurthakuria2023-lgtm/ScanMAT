@@ -1969,12 +1969,76 @@ document.getElementById('materialForm').addEventListener('submit',async e=>{
  const master=findMaster(code);
  if(!master){alert('Material Code is not present in the Material Master. Register only master-listed codes.');handleRegistrationCode();return;}
 
- if(records.some(r=>String(r.code).trim().toLowerCase()===code.toLowerCase())){
-   alert('This Material Code already exists. Use the existing record or another unique code.');
+ const qty=+f.get('available')||0;
+ const existing=records.find(r=>String(r.code).trim().toLowerCase()===code.toLowerCase());
+
+ // Existing material code = new receipt / return.
+ // Keep one archive record and add the new quantity to its available stock.
+ if(existing){
+   if(qty<=0){
+     alert('Enter a valid quantity greater than 0.');
+     return;
+   }
+
+   const backup={...existing};
+
+   try{
+     if(cloudReady&&file){
+       existing.photo=await uploadMaterialPhoto(file,code);
+     }else if(file){
+       const rd=await new Promise((resolve,reject)=>{
+         const reader=new FileReader();
+         reader.onload=()=>resolve(reader.result);
+         reader.onerror=reject;
+         reader.readAsDataURL(file);
+       });
+       existing.photo=rd;
+     }
+
+     existing.available=+(available(existing)+qty).toFixed(6);
+     existing.desc=master.desc||existing.desc||'';
+     existing.uom=master.uom||existing.uom||'';
+     existing.bin=f.get('bin')||existing.bin||'';
+     existing.supplier=f.get('supplier')||existing.supplier||'';
+     existing.grn=f.get('grn')||existing.grn||'';
+     existing.date=f.get('date')||existing.date||'';
+     existing.remarks=f.get('remarks')||existing.remarks||'';
+     existing.status=f.get('status')||existing.status||'';
+
+     if(cloudReady){
+       const ok=await updateMaterialCloud(existing);
+       if(!ok){
+         Object.assign(existing,backup);
+         return;
+       }
+     }
+
+     save();
+     currentLabelRecord=existing;
+     generateLabel(existing);
+     document.getElementById('codebox').style.display='block';
+     e.target.reset();
+     closeMaterialCamera();
+     document.getElementById('preview').src='';
+     document.getElementById('preview').style.display='none';
+     document.getElementById('issueDate').value=localDateISO();
+
+     alert(`Material already exists. ${qty} ${existing.uom||''} added to the existing stock. New available quantity: ${existing.available} ${existing.uom||''}.`);
+     return;
+
+   }catch(err){
+     Object.assign(existing,backup);
+     console.error(err);
+     alert('Material quantity could not be added: '+err.message);
+     return;
+   }
+ }
+
+ if(qty<=0){
+   alert('Enter a valid quantity greater than 0.');
    return;
  }
 
- const qty=+f.get('available')||0;
  const rec={
    id:Date.now(),
    code:code,
@@ -2016,153 +2080,6 @@ document.getElementById('materialForm').addEventListener('submit',async e=>{
    console.error(err);
    alert('Material could not be saved: '+err.message);
  }
-});
-
-function generateLabel(r){
-  if(!r)return;
-  currentLabelRecord=r;
-  document.getElementById('labelCode').textContent=r.code;
-  document.getElementById('labelDesc').textContent=r.desc||'';
-  document.getElementById('labelBin').textContent=r.bin||'-';
-   document.getElementById('labelPO').textContent=r.grn||'-';
-   document.getElementById('labelDate').textContent=r.date||'-';
-  const svg=document.getElementById('barcode');
-  svg.innerHTML='';
-  if(window.JsBarcode){
-    try{JsBarcode(svg,String(r.code),{format:'CODE128',lineColor:'#10243e',background:'#ffffff',width:2.2,height:62,displayValue:true,fontOptions:'bold',font:'Arial',fontSize:12,margin:7});}catch(e){alert('Unable to generate barcode for this Material Code.');}
-  }
-}
-
-function printCurrentLabel(){
- if(!currentLabelRecord){alert('Register a material first.');return;}
- const r=currentLabelRecord;
- document.getElementById('printLabel').innerHTML=
- `<div class="print-label label-card">
-   <div class="label-top"><div class="label-brand">DIGITAL WAREHOUSE ARCHIVE</div><div class="label-type">CODE128</div></div>
-   <div class="label-body">
-     <div class="label-code">${escapeHtml(r.code)}</div>
-     <div class="label-desc">${escapeHtml(r.desc||'')}</div>
-     <div class="barcode-frame"><svg id="printBarcode"></svg></div>
-     <div class="label-meta">
-      <div class="label-meta-box"><small>Storage Bin</small><strong>BIN: ${escapeHtml(r.bin||'-')}</strong></div>
-      <div class="label-meta-box"><small>PO / DATE</small><strong>${escapeHtml(r.grn||'-')} <span style="color:#8a97a7">•</span> ${escapeHtml(r.date||'-')}</strong></div>
-    </div>
-   </div>
-   <div class="label-bottom"><span>SCAN WITH BARCODE READER</span><span>SCANMAT</span></div>
- </div>`;
- if(window.JsBarcode){
-   JsBarcode('#printBarcode',String(r.code),{format:'CODE128',lineColor:'#10243e',background:'#ffffff',width:2.2,height:62,displayValue:true,fontOptions:'bold',font:'Arial',fontSize:12,margin:7});
- }
- window.print();
-}
-
-function downloadBarcode(){
- if(!currentLabelRecord){alert('Register a material first.');return;}
- const svg=document.getElementById('barcode');
- if(!svg || !svg.outerHTML){alert('Barcode is not available.');return;}
- const data='<?xml version="1.0" standalone="no"?>'+svg.outerHTML;
- const blob=new Blob([data],{type:'image/svg+xml'});
- const url=URL.createObjectURL(blob);
- const a=document.createElement('a');
- a.href=url;
- a.download=currentLabelRecord.code+'_barcode.svg';
- document.body.appendChild(a);
- a.click();
- a.remove();
- setTimeout(()=>URL.revokeObjectURL(url),1000);
-}
-
-function escapeHtml(s){
- return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
-}
-
-async function toggleScanner(id){
- const box=document.getElementById(id);
- if(!box)return;
-
- if(box.classList.contains('show')){
-   stopScanner();
-   return;
- }
-
- if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-   alert('Camera scanning is not available in this browser. Please enter the Material Code manually.');
-   return;
- }
-
- if(!('BarcodeDetector' in window)){
-   alert('This browser does not support native barcode scanning. Chrome on Android is recommended, or enter the Material Code manually.');
-   return;
- }
-
- try{
-   const supported=await BarcodeDetector.getSupportedFormats();
-   const preferred=['code_128','code_39','ean_13','ean_8','upc_a','upc_e'];
-   const formats=preferred.filter(x=>supported.includes(x));
-   if(!formats.length){
-     alert('No supported barcode format is available in this browser.');
-     return;
-   }
-
-   const detector=new BarcodeDetector({formats});
-   const video=box.querySelector('video');
-   activeStream=await navigator.mediaDevices.getUserMedia({
-     video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},
-     audio:false
-   });
-   video.srcObject=activeStream;
-   box.classList.add('show');
-   await video.play();
-
-   scanTimer=setInterval(async()=>{
-     try{
-       if(video.readyState<2)return;
-       const codes=await detector.detect(video);
-       if(codes && codes.length){
-         const value=(codes[0].rawValue||'').trim();
-         if(value){
-           handleScannedCode(value);
-           stopScanner();
-         }
-       }
-     }catch(err){}
-   },300);
-
- }catch(err){
-   stopScanner();
-   alert('Camera access was not available. Please allow camera permission and try again, or enter the Material Code manually.');
- }
-}
-
-function handleScannedCode(value){
- const clean=String(value||'').trim();
- if(!clean)return;
-
- const reg=document.getElementById('regCode');
- const issue=document.getElementById('issueCode');
-
- if(reg && document.getElementById('register').classList.contains('active')){
-   reg.value=clean;
-   handleRegistrationCode();
- }
- if(issue && document.getElementById('issue').classList.contains('active')){
-   issue.value=clean;
-   findIssueMaterial();
- }
-}
-
-function stopScanner(){
- if(scanTimer){
-   clearInterval(scanTimer);
-   scanTimer=null;
- }
- if(activeStream){
-   activeStream.getTracks().forEach(t=>t.stop());
-   activeStream=null;
- }
- document.querySelectorAll('.scanner').forEach(x=>x.classList.remove('show'));
- document.querySelectorAll('.scanner video').forEach(v=>{
-   try{v.pause();v.srcObject=null;}catch(e){}
  });
 }
 
