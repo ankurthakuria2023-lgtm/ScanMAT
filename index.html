@@ -504,6 +504,7 @@
         <div class="label-top"><div class="label-brand">DIGITAL WAREHOUSE ARCHIVE</div><div class="label-type">CODE128</div></div>
         <div class="label-body">
           <div id="labelCode" class="label-code"></div>
+          <div id="labelBatch" class="label-desc" style="font-weight:800;color:#1769aa;margin-bottom:5px"></div>
           <div id="labelDesc" class="label-desc"></div>
           <div class="barcode-frame"><svg id="barcode"></svg></div>
           <div class="label-meta">
@@ -644,6 +645,20 @@ let supabaseClient=null;
 let supabaseUser=null;
 let cloudReady=false;
 let cloudSyncing=false;
+let selectedIssueRecord=null;
+function batchId(r){return r&&r.id!=null?`B-${String(r.id).slice(-8)}`:'—';}
+function batchBarcodeValue(r){return r&&r.code?`${r.code}|${r.id}`:'';}
+function findBatchByBarcode(value){
+ const v=String(value||'').trim();
+ return records.find(x=>batchBarcodeValue(x).toLowerCase()===v.toLowerCase())||
+        records.find(x=>batchId(x).toLowerCase()===v.toLowerCase())||null;
+}
+function fifoBatches(code){
+ return records.filter(r=>String(r.code||'').trim().toLowerCase()===String(code||'').trim().toLowerCase()&&available(r)>0)
+ .sort((a,b)=>{const da=String(a.date||'9999-12-31'),db=String(b.date||'9999-12-31');return da!==db?da.localeCompare(db):Number(a.id||0)-Number(b.id||0);});
+}
+function recommendedBatch(code){return fifoBatches(code)[0]||null;}
+
 let scanTimer=null;
 let currentLabelRecord=null;
 let receivedChart=null;
@@ -827,7 +842,7 @@ async function syncLocalDataToSupabase(){
         const photoFile=await dataUrlToFile(r.photo,r.code);
         if(photoFile)r.photo=await uploadMaterialPhoto(photoFile,r.code);
       }
-      const {data:existing}=await supabaseClient.from('materials').select('id').eq('code',r.code).maybeSingle();
+      const {data:existing}=await supabaseClient.from('materials').select('id').eq('id',r.id).maybeSingle();
       if(!existing){const {error}=await supabaseClient.from('materials').insert(materialDbRow(r));if(error)throw error;importedMaterials++;}
     }
     for(const x of issueMap.values()){
@@ -1776,7 +1791,7 @@ function renderArchive(q=''){
     <td>${escapeHtml(r.grn||'-')}</td>
     <td>${escapeHtml(lastConsumption(r.code))}</td>
     <td>${statusBadge(r.status)}</td>
-    <td class="barcode-cell"><svg class="archive-barcode" id="archive-barcode-${r.id}"></svg><div class="barcode-code-text">${escapeHtml(r.code||'')}</div></td>
+    <td class="barcode-cell"><svg class="archive-barcode" id="archive-barcode-${r.id}"></svg><div class="barcode-code-text">${escapeHtml(r.code||'')} · ${escapeHtml(batchId(r))}</div></td>
     <td><div class="issue-actions" style="margin-top:0;flex-wrap:nowrap"><button class="btn secondary" onclick="openRecord(${r.id})">View</button><button class="btn delete-btn" onclick="deleteMaterial(${r.id})">Delete</button></div></td>
   </tr>`).join(''):
   `<tr><td colspan="12" class="empty">No material records found.</td></tr>`;
@@ -1788,7 +1803,7 @@ function renderArchiveBarcodes(rows){
     const el=document.getElementById('archive-barcode-'+r.id);
     if(!el)return;
     el.innerHTML='';
-    try{JsBarcode(el,String(r.code||''),{format:'CODE128',lineColor:'#10243e',background:'#ffffff',width:1.4,height:48,displayValue:false,margin:2});}catch(e){}
+    try{JsBarcode(el,batchBarcodeValue(r),{format:'CODE128',lineColor:'#10243e',background:'#ffffff',width:1.4,height:48,displayValue:false,margin:2});}catch(e){}
   });
 }
 
@@ -1831,6 +1846,9 @@ function openRecord(id){
    </div>
    <div><h3>${escapeHtml(r.desc||'')}</h3>
    <div class="kv"><b>Material Code</b><span>${escapeHtml(r.code)}</span></div>
+   <div class="kv"><b>Batch ID</b><span>${escapeHtml(batchId(r))}</span></div>
+   <div class="kv"><b>FIFO Priority</b><span>${Math.max(1,fifoBatches(r.code).findIndex(x=>x.id===r.id)+1)}</span></div>
+   <div class="kv"><b>Batch Barcode</b><span>${escapeHtml(batchBarcodeValue(r))}</span></div>
    <div class="kv"><b>UOM</b><span>${escapeHtml(r.uom||'-')}</span></div>
    <div class="kv"><b>Bin Location</b><span>${escapeHtml(r.bin||'-')}</span></div>
    <div class="kv"><b>Available Quantity</b><span>${available(r)} ${escapeHtml(r.uom||'')}</span></div>
@@ -1963,87 +1981,24 @@ refreshMasterCount();
 
 document.getElementById('materialForm').addEventListener('submit',async e=>{
  e.preventDefault();
- const f=new FormData(e.target);
- const file=document.getElementById('photo').files[0];
- const code=String(f.get('code')||'').trim();
- const master=findMaster(code);
+ const f=new FormData(e.target),file=document.getElementById('photo').files[0];
+ const code=String(f.get('code')||'').trim(),master=findMaster(code);
  if(!master){alert('Material Code is not present in the Material Master. Register only master-listed codes.');handleRegistrationCode();return;}
-
- const existing=records.find(r=>String(r.code).trim().toLowerCase()===code.toLowerCase());
  const qty=+f.get('available')||0;
+ if(qty<=0){alert('Enter a valid Available Quantity.');return;}
 
- // Existing material registration: add the new quantity to the original
- // available quantity instead of creating a duplicate archive record.
- if(existing){
-   if(qty<=0){alert('Enter a valid Available Quantity.');return;}
-   existing.available=+(available(existing)+qty).toFixed(6);
-   // Treat this re-registration (including reversed/returned material) as a
-   // receipt on the selected registration date so Dashboard shows it in
-   // Received Today when the date is today.
-   existing.date=f.get('date')||localDateISO();
-   try{
-     if(cloudReady){
-       const ok=await updateMaterialCloud(existing);
-       if(!ok)return;
-     }
-     save();
-     currentLabelRecord=existing;
-     generateLabel(existing);
-     document.getElementById('codebox').style.display='block';
-     e.target.reset();
-     closeMaterialCamera();
-     document.getElementById('preview').src='';
-     document.getElementById('preview').style.display='none';
-     document.getElementById('issueDate').value=localDateISO();
-     alert(`Material quantity added successfully. Available Quantity: ${existing.available} ${existing.uom||''}`);
-   }catch(err){
-     console.error(err);
-     alert('Material quantity could not be updated: '+err.message);
-   }
-   return;
- }
-
- const rec={
-   id:Date.now(),
-   code:code,
-   desc:master.desc||'',
-   bin:f.get('bin'),
-   supplier:f.get('supplier'),
-   grn:f.get('grn'),
-   uom:master.uom||'',
-   date:f.get('date'),
-   photo:'',
-   remarks:f.get('remarks'),
-   status:f.get('status')||'',
-   available:qty
- };
-
+ // Every registration is a NEW receipt batch, even when the Material Code already exists.
+ const rec={id:Date.now(),code:code,desc:master.desc||'',bin:f.get('bin'),supplier:f.get('supplier'),grn:f.get('grn'),
+   uom:master.uom||'',date:f.get('date')||localDateISO(),photo:'',remarks:f.get('remarks'),status:f.get('status')||'',available:qty};
  try{
-   if(cloudReady&&file){
-     rec.photo=await uploadMaterialPhoto(file,code);
-   }else if(file){
-     const rd=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});
-     rec.photo=rd;
-   }
-   if(cloudReady){
-     const ok=await insertMaterialCloud(rec);
-     if(!ok)return;
-   }
-   records.push(rec);
-   save();
-   currentLabelRecord=rec;
-   generateLabel(rec);
-   document.getElementById('codebox').style.display='block';
-   e.target.reset();
-   closeMaterialCamera();
-   document.getElementById('preview').src='';
-   document.getElementById('preview').style.display='none';
-   document.getElementById('issueDate').value=localDateISO();
-   alert('Material archive record saved and barcode generated.');
- }catch(err){
-   console.error(err);
-   alert('Material could not be saved: '+err.message);
- }
+   if(cloudReady&&file)rec.photo=await uploadMaterialPhoto(file,code);
+   else if(file){const rd=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});rec.photo=rd;}
+   if(cloudReady){const ok=await insertMaterialCloud(rec);if(!ok)return;}
+   records.push(rec);save();currentLabelRecord=rec;generateLabel(rec);
+   document.getElementById('codebox').style.display='block';e.target.reset();closeMaterialCamera();
+   document.getElementById('preview').src='';document.getElementById('preview').style.display='none';document.getElementById('issueDate').value=localDateISO();
+   alert(`New batch ${batchId(rec)} registered successfully. Quantity: ${rec.available} ${rec.uom||''}`);
+ }catch(err){console.error(err);alert('Material could not be saved: '+err.message);}
 });
 
 function generateLabel(r){
@@ -2057,7 +2012,7 @@ function generateLabel(r){
   const svg=document.getElementById('barcode');
   svg.innerHTML='';
   if(window.JsBarcode){
-    try{JsBarcode(svg,String(r.code),{format:'CODE128',lineColor:'#10243e',background:'#ffffff',width:2.2,height:62,displayValue:true,fontOptions:'bold',font:'Arial',fontSize:12,margin:7});}catch(e){alert('Unable to generate barcode for this Material Code.');}
+    try{JsBarcode(svg,batchBarcodeValue(r),{format:'CODE128',lineColor:'#10243e',background:'#ffffff',width:2.2,height:62,displayValue:true,fontOptions:'bold',font:'Arial',fontSize:12,margin:7});}catch(e){alert('Unable to generate barcode for this Material Code.');}
   }
 }
 
@@ -2079,7 +2034,7 @@ function printCurrentLabel(){
    <div class="label-bottom"><span>SCAN WITH BARCODE READER</span><span>SCANMAT</span></div>
  </div>`;
  if(window.JsBarcode){
-   JsBarcode('#printBarcode',String(r.code),{format:'CODE128',lineColor:'#10243e',background:'#ffffff',width:2.2,height:62,displayValue:true,fontOptions:'bold',font:'Arial',fontSize:12,margin:7});
+   JsBarcode('#printBarcode',batchBarcodeValue(r),{format:'CODE128',lineColor:'#10243e',background:'#ffffff',width:2.2,height:62,displayValue:true,fontOptions:'bold',font:'Arial',fontSize:12,margin:7});
  }
  window.print();
 }
@@ -2195,22 +2150,27 @@ function stopScanner(){
 }
 
 function findIssueMaterial(){
- const code=document.getElementById('issueCode').value.trim().toLowerCase();
- const r=records.find(x=>String(x.code).toLowerCase()===code);
-
+ const scanned=String(document.getElementById('issueCode').value||'').trim();
+ if(!scanned){document.getElementById('issueMaterialInfo').classList.remove('show');selectedIssueRecord=null;return;}
+ let r=findBatchByBarcode(scanned),exactBatch=!!r;
  if(!r){
-   document.getElementById('issueMaterialInfo').classList.remove('show');
-   alert('Material Code not found in the Digital Archive.');
-   return;
+   if(!records.some(x=>String(x.code).toLowerCase()===scanned.toLowerCase())){
+     document.getElementById('issueMaterialInfo').classList.remove('show');selectedIssueRecord=null;alert('Material Code / Batch Barcode not found in the Digital Archive.');return;
+   }
+   r=recommendedBatch(scanned);
+   if(!r){document.getElementById('issueMaterialInfo').classList.remove('show');selectedIssueRecord=null;alert('No available quantity remains for this Material Code.');return;}
  }
-
+ selectedIssueRecord=r;
+ const oldest=recommendedBatch(r.code),compliant=!oldest||oldest.id===r.id;
+ const priority=Math.max(1,fifoBatches(r.code).findIndex(x=>x.id===r.id)+1);
+ const notice=compliant?`✓ FIFO Compliant — ${batchId(r)} is the oldest available batch for ${r.code}.`:`⚠ FIFO Violation — ${batchId(r)} selected, but older batch ${batchId(oldest)} is available at ${oldest.bin||'-'}.`;
  document.getElementById('issueMaterialInfo').classList.add('show');
  document.getElementById('issueDesc').textContent=r.desc;
- document.getElementById('issueMeta').textContent=`Code: ${r.code} | Bin: ${r.bin} | GRN: ${r.grn||'-'}`;
- document.getElementById('issueAvailable').textContent=available(r);
- document.getElementById('issueUom').textContent=r.uom||'';
- document.getElementById('issueQty').max=available(r);
- document.getElementById('issueQty').value='';
+ document.getElementById('issueMeta').innerHTML=`<div style="margin-bottom:9px;padding:9px 11px;border-radius:7px;background:${compliant?'#e8f5ec':'#fff1e8'};color:${compliant?'#23753f':'#b54708'};font-weight:700">${notice}</div>`+
+   `<b>Material Code:</b> ${escapeHtml(r.code)} &nbsp;|&nbsp; <b>Batch:</b> ${escapeHtml(batchId(r))} &nbsp;|&nbsp; <b>Priority:</b> ${priority} &nbsp;|&nbsp; <b>Bin:</b> ${escapeHtml(r.bin||'-')} &nbsp;|&nbsp; <b>GRN:</b> ${escapeHtml(r.grn||'-')} &nbsp;|&nbsp; <b>Receipt:</b> ${escapeHtml(r.date||'-')}`;
+ if(!exactBatch&&oldest)document.getElementById('issueCode').value=oldest.code;
+ document.getElementById('issueAvailable').textContent=available(r);document.getElementById('issueUom').textContent=r.uom||'';
+ document.getElementById('issueQty').max=available(r);document.getElementById('issueQty').value='';
 }
 
 function prepareIssue(code){
@@ -2220,57 +2180,25 @@ function prepareIssue(code){
 }
 
 async function issueMaterial(){
- const code=document.getElementById('issueCode').value.trim();
- const r=records.find(x=>String(x.code).toLowerCase()===code.toLowerCase());
-
- if(!r){alert('Please scan or enter a valid Material Code first.');return;}
-
- const q=+document.getElementById('issueQty').value;
- const to=document.getElementById('issueTo').value.trim();
- const date=document.getElementById('issueDate').value;
- const ref=document.getElementById('issueRef').value.trim();
- const remarks=document.getElementById('issueRemarks').value.trim();
- const av=available(r);
-
- if(!q||q<=0){alert('Enter a valid issue quantity.');return;}
- if(q>av){alert(`Issue quantity cannot exceed available quantity (${av} ${r.uom||''}).`);return;}
- if(!to){alert('Enter Issued To / Department.');return;}
- if(!date){alert('Select Issue Date.');return;}
-
- r.available=+(av-q).toFixed(6);
-
- issues.push({
-   id:Date.now(),
-   date:date,
-   code:r.code,
-   desc:r.desc,
-   qty:q,
-   uom:r.uom||'',
-   to:to,
-   ref:ref,
-   remarks:remarks,
-   balance:r.available,
-   bin:r.bin
- });
-
- save();
- saveIssues();
- if(cloudReady){
-   const materialOk=await updateMaterialCloud(r);
-   const issueOk=await insertIssueCloud(issues[issues.length-1]);
-   if(!materialOk||!issueOk){
-     alert('Warning: the local browser data was updated, but the Supabase transaction may not be fully synchronized. Use Sync Local Data after checking the database.');
-   }
+ const entered=String(document.getElementById('issueCode').value||'').trim();
+ const r=selectedIssueRecord||findBatchByBarcode(entered)||recommendedBatch(entered);
+ if(!r){alert('Please scan a valid batch barcode or enter a valid Material Code first.');return;}
+ const oldest=recommendedBatch(r.code);
+ if(oldest&&oldest.id!==r.id&&available(oldest)>0){
+   alert(`FIFO Violation — Issue blocked.\n\nSelected Batch: ${batchId(r)}\nSelected Bin: ${r.bin||'-'}\n\nOlder Available Batch: ${batchId(oldest)}\nOlder Batch Bin: ${oldest.bin||'-'}\nReceipt Date: ${oldest.date||'-'}\n\nPlease issue the oldest available batch first.`);
+   return;
  }
-
- document.getElementById('issueQty').value='';
- document.getElementById('issueTo').value='';
- document.getElementById('issueRef').value='';
- document.getElementById('issueRemarks').value='';
- document.getElementById('issueAvailable').textContent=r.available;
-
- alert(`Material issued successfully. Balance: ${r.available} ${r.uom||''}`);
- renderIssues();
+ const q=+document.getElementById('issueQty').value,to=document.getElementById('issueTo').value.trim(),date=document.getElementById('issueDate').value,
+       ref=document.getElementById('issueRef').value.trim(),remarks=document.getElementById('issueRemarks').value.trim(),av=available(r);
+ if(!q||q<=0){alert('Enter a valid issue quantity.');return;} if(q>av){alert(`Issue quantity cannot exceed available quantity (${av} ${r.uom||''}).`);return;}
+ if(!to){alert('Enter Issued To / Department.');return;} if(!date){alert('Select Issue Date.');return;}
+ r.available=+(av-q).toFixed(6);
+ issues.push({id:Date.now(),date:date,code:r.code,desc:r.desc,qty:q,uom:r.uom||'',to:to,ref:ref,remarks:remarks,balance:r.available,bin:r.bin,batch_id:batchId(r)});
+ save();saveIssues();
+ if(cloudReady){const materialOk=await updateMaterialCloud(r),issueOk=await insertIssueCloud(issues[issues.length-1]);if(!materialOk||!issueOk)alert('Warning: the local browser data was updated, but the Supabase transaction may not be fully synchronized. Use Sync Local Data after checking the database.');}
+ document.getElementById('issueQty').value='';document.getElementById('issueTo').value='';document.getElementById('issueRef').value='';document.getElementById('issueRemarks').value='';
+ document.getElementById('issueAvailable').textContent=r.available;selectedIssueRecord=null;
+ alert(`Material issued successfully from ${batchId(r)}. Balance: ${r.available} ${r.uom||''}`);renderIssues();
 }
 
 function renderIssues(q=''){
@@ -2280,7 +2208,7 @@ function renderIssues(q=''){
  );
 
  document.getElementById('issueRows').innerHTML=rows.length?
- rows.map(x=>`<tr><td>${x.date}</td><td><b>${x.code}</b></td><td>${x.desc}</td><td><b>${x.qty}</b> ${x.uom}</td><td>${x.to}</td><td>${x.ref||'-'}</td><td>${x.balance} ${x.uom}</td></tr>`).join(''):
+ rows.map(x=>`<tr><td>${x.date}</td><td><b>${x.code}</b><br><small>${escapeHtml(x.batch_id||'')}</small></td><td>${x.desc}</td><td><b>${x.qty}</b> ${x.uom}</td><td>${x.to}</td><td>${x.ref||'-'}</td><td>${x.balance} ${x.uom}</td></tr>`).join(''):
  `<tr><td colspan="7" class="empty">No issue transactions found.</td></tr>`;
 }
 
@@ -2332,7 +2260,7 @@ function downloadMaterialBarcode(id){
   try{JsBarcode(svg,String(r.code),{format:'CODE128',lineColor:'#10243e',background:'#ffffff',width:2.5,height:80,displayValue:true,fontOptions:'bold',fontSize:14,margin:10});}catch(e){alert('Unable to generate barcode.');return;}
   const source='<?xml version="1.0" encoding="UTF-8"?>\n'+svg.outerHTML;
   const blob=new Blob([source],{type:'image/svg+xml;charset=utf-8'});const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download=`${r.code}_CODE128.svg`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  const a=document.createElement('a');a.href=url;a.download=`${r.code}_${batchId(r)}_CODE128.svg`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 function exportCSV(){
  let csv='Material Code,Description,Bin Location,Supplier,PO/GRN,Quantity,UOM,Received Date,Remarks\n';
